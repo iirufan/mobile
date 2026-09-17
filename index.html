@@ -350,7 +350,12 @@ button{cursor:pointer}
     </label>
   </div>
   <div id="languageVoiceStatus" style="margin-top:10px;font-size:12px;opacity:.82">English + Chinese (Mandarin) selected</div>
-  <div id="onlineTtsStatus" style="margin-top:6px;font-size:12px;opacity:.82">English uses the current browser reader. Russian, Chinese and Arabic use Microsoft Edge neural TTS.</div>
+  <div id="onlineTtsStatus" style="margin-top:6px;font-size:12px;opacity:.82">English uses the current browser reader. Selecting Russian, Chinese or Arabic automatically switches both preview and audio to Microsoft Edge neural TTS.</div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px">
+    <button type="button" class="mini" onclick="testForeignVoice('ru-RU')">Test Russian</button>
+    <button type="button" class="mini" onclick="testForeignVoice('zh-CN')">Test Chinese</button>
+    <button type="button" class="mini" onclick="testForeignVoice('ar-SA')">Test Arabic</button>
+  </div>
   <div style="margin-top:12px">
     <div style="font-size:12px;font-weight:900;margin-bottom:6px">Boarding Text in Selected Language</div>
     <div id="selectedLanguageBoardingText" dir="auto" style="white-space:pre-wrap;line-height:1.55;padding:12px;border:1px solid rgba(98,243,232,.35);border-radius:10px;background:rgba(255,255,255,.04)">Select or prepare an announcement to preview it here.</div>
@@ -2015,72 +2020,91 @@ const KOVELI_ONLINE_VOICES={
  "ar-SA":"ar-SA-ZariyahNeural"
 };
 let koveliOnlineAudio=null;
-let koveliOnlineAbort=null;
 
 function setOnlineTtsStatus(message,isError=false){
  const el=$("onlineTtsStatus");
- if(!el)return;
- el.textContent=message;
- el.style.color=isError?"#ff9b9b":"";
+ if(el){
+   el.textContent=message;
+   el.style.color=isError?"#ff9b9b":"";
+ }
 }
 function stopKoveliOnlineAudio(){
- if(koveliOnlineAbort){try{koveliOnlineAbort.abort();}catch{} koveliOnlineAbort=null;}
  if(koveliOnlineAudio){
-   try{koveliOnlineAudio.pause();koveliOnlineAudio.currentTime=0;}catch{}
-   if(koveliOnlineAudio.src?.startsWith("blob:")) URL.revokeObjectURL(koveliOnlineAudio.src);
+   try{koveliOnlineAudio.pause();}catch{}
+   try{
+     if(koveliOnlineAudio.src && koveliOnlineAudio.src.startsWith("blob:"))
+       URL.revokeObjectURL(koveliOnlineAudio.src);
+   }catch{}
    koveliOnlineAudio=null;
  }
 }
-async function koveliOnlineSpeak(text,lang){
- const voice=KOVELI_ONLINE_VOICES[lang];
- if(!voice)throw new Error("No online voice configured for "+lang);
-
- const langName=($("announcementSecondLanguage")?.selectedOptions?.[0]?.text)||lang;
- setOnlineTtsStatus("Preparing "+langName+" neural audio…");
-
- stopKoveliOnlineAudio();
- koveliOnlineAbort=new AbortController();
-
- const res=await fetch("/api/tts",{
+async function requestEdgeAudio(text,lang){
+ const response=await fetch("/api/tts",{
    method:"POST",
    headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({text,lang,voice}),
-   signal:koveliOnlineAbort.signal
+   body:JSON.stringify({text,lang})
  });
- koveliOnlineAbort=null;
-
- if(!res.ok){
-   let message="TTS request failed ("+res.status+")";
+ if(!response.ok){
+   let detail="";
    try{
-     const data=await res.json();
-     if(data?.error)message=data.error;
-   }catch{}
-   throw new Error(message);
+     const j=await response.json();
+     detail=j.error||j.detail||"";
+   }catch{
+     try{detail=await response.text();}catch{}
+   }
+   throw new Error("TTS "+response.status+(detail?": "+detail:""));
  }
-
- const blob=await res.blob();
- if(!blob.size)throw new Error("TTS server returned empty audio.");
-
+ const type=response.headers.get("content-type")||"";
+ if(!type.includes("audio/"))throw new Error("Server did not return audio. Content-Type: "+type);
+ const blob=await response.blob();
+ if(blob.size<100)throw new Error("Generated audio is empty.");
+ return blob;
+}
+async function playEdgeAudio(text,lang){
+ stopKoveliOnlineAudio();
+ const name=$("announcementSecondLanguage")?.selectedOptions?.[0]?.text||lang;
+ setOnlineTtsStatus("Generating "+name+" audio…");
+ const blob=await requestEdgeAudio(text,lang);
  const url=URL.createObjectURL(blob);
  const audio=new Audio(url);
  koveliOnlineAudio=audio;
  audio.preload="auto";
-
- setOnlineTtsStatus("Playing "+langName+" · "+voice);
-
+ await new Promise((resolve,reject)=>{
+   audio.oncanplay=resolve;
+   audio.onerror=()=>reject(new Error("Browser could not decode generated MP3."));
+   audio.load();
+ });
+ setOnlineTtsStatus("Playing "+name+" · "+KOVELI_ONLINE_VOICES[lang]);
  try{
    await audio.play();
    await new Promise((resolve,reject)=>{
      audio.onended=resolve;
-     audio.onerror=()=>reject(new Error("Generated audio could not be played."));
+     audio.onerror=()=>reject(new Error("Audio playback failed."));
    });
- } finally {
+ }finally{
    URL.revokeObjectURL(url);
    if(koveliOnlineAudio===audio)koveliOnlineAudio=null;
  }
 }
+async function testForeignVoice(lang){
+ const samples={
+   "ru-RU":"Добро пожаловать в зал ожидания Koveli. Проверка русского голосового объявления.",
+   "zh-CN":"欢迎来到 Koveli 贵宾休息室。这是中文语音测试。",
+   "ar-SA":"مرحباً بكم في صالة كوفيلي. هذا اختبار للصوت العربي."
+ };
+ speechSynthesis.cancel();
+ duckMusic();
+ try{
+   await playEdgeAudio(samples[lang],lang);
+   setOnlineTtsStatus("Voice test successful · "+KOVELI_ONLINE_VOICES[lang]);
+ }catch(e){
+   console.error("Foreign voice test failed",e);
+   setOnlineTtsStatus("Voice test failed · "+e.message,true);
+ }finally{
+   restoreMusic();
+ }
+}
 async function koveliSpeak(text,lang){
- // Keep the existing browser/Windows reader for English.
  if(lang==="en-US"){
    setOnlineTtsStatus("English · current browser reader");
    return new Promise(done=>{
@@ -2088,36 +2112,27 @@ async function koveliSpeak(text,lang){
      u.lang="en-US";
      const v=koveliVoice("en-US");
      if(v)u.voice=v;
-     const status=$("languageVoiceStatus");
-     if(status)status.textContent="English audio · "+(v?v.name:"browser default voice");
      u.rate=1;u.pitch=1;u.volume=1;
      u.onend=done;u.onerror=done;
      speechSynthesis.speak(u);
    });
  }
- // Russian, Mandarin and Arabic use the server-side neural TTS endpoint.
  if(KOVELI_ONLINE_VOICES[lang]){
-   const status=$("languageVoiceStatus");
-   if(status)status.textContent=(($("announcementSecondLanguage")?.selectedOptions?.[0]?.text)||lang)+" · Microsoft Edge neural reader";
    try{
-     await koveliOnlineSpeak(text,lang);
-     return;
-   }catch(err){
-     console.error("Online TTS failed:",err);
-     setOnlineTtsStatus("Online reader failed: "+err.message,true);
-     // Do not silently read Russian/Chinese/Arabic with an English voice.
-     notice?.("Online "+lang+" reader failed. Check the /api/tts deployment and Vercel logs.",false);
-     return;
+     await playEdgeAudio(text,lang);
+   }catch(e){
+     console.error("KOVELI_FOREIGN_TTS_ERROR",e);
+     setOnlineTtsStatus("Foreign audio failed · "+e.message,true);
+     throw e;
    }
+   return;
  }
- // Dhivehi: browser voice only when a matching Dhivehi voice exists.
+ // Dhivehi only uses a matching installed browser voice; never substitute English.
  return new Promise(done=>{
    const v=koveliVoice(lang);
    if(!v){
-     setOnlineTtsStatus("No matching Dhivehi reader is available on this device.",true);
-     const status=$("languageVoiceStatus");
-     if(status)status.textContent="Dhivehi · reader unavailable";
-     done();return;
+     setOnlineTtsStatus("No Dhivehi reader is installed on this device.",true);
+     done(); return;
    }
    const u=new SpeechSynthesisUtterance(text);
    u.lang=lang;u.voice=v;u.rate=1;u.pitch=1;u.volume=1;
@@ -2407,9 +2422,24 @@ if($("announcementLanguageMode")){
    if($("languageVoiceStatus"))$("languageVoiceStatus").textContent=modeName+" selected";
  };
  $("announcementLanguageMode").addEventListener("change",()=>{updateLanguageStatus();applyAnnouncementLanguage();});
- $("announcementSecondLanguage").addEventListener("change",()=>{updateLanguageStatus();applyAnnouncementLanguage();});
+$("announcementSecondLanguage").addEventListener("change",()=>{
+ const lang=$("announcementSecondLanguage").value;
+ $("announcementLanguageMode").value=(lang==="en-US"?"english":"selected");
+ localStorage.setItem("koveliLanguageMode",$("announcementLanguageMode").value);
+ localStorage.setItem("koveliSecondLanguage",lang);
  updateLanguageStatus();
- setTimeout(applyAnnouncementLanguage,250);
+ applyAnnouncementLanguage();
+ updatePreview();
+});
+ 
+ updateLanguageStatus();
+ setTimeout(()=>{
+  const lang=$("announcementSecondLanguage")?.value||"en-US";
+  if(lang!=="en-US" && $("announcementLanguageMode")?.value==="english"){
+    $("announcementLanguageMode").value="selected";
+  }
+  applyAnnouncementLanguage();
+},250);
  document.addEventListener("input",e=>{
    if(e.target && ["INPUT","SELECT","TEXTAREA"].includes(e.target.tagName)){
      clearTimeout(window.__koveliLangPreviewTimer);
