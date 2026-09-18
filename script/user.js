@@ -12,7 +12,7 @@ window.KOVELI_USERS = [
         username: "admin",
         name: "System Administrator",
         email: "admin@example.com",
-        passwordHash: "REPLACE_WITH_SHA256_HASH_FROM_ADMIN_PAGE",
+        passwordHash: "557808176cfefce664c3694042b720e1be6a41974527178598622edc21dc6d9d",
         role: "admin",
         department: "Koveli Lounge",
         landingPage: "admin.html",
