@@ -1,9 +1,252 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Koveli Lounge | Admin</title><link rel="stylesheet" href="styles/styles.css"><link rel="stylesheet" href="styles/admin.css"></head>
-<body class="admin-body"><main class="admin-shell">
-<header class="admin-header"><img src="assets/images/koveli-logo.png" alt="Koveli Lounge"><div><h1>User Administration</h1><p>Registered users waiting for authorization</p></div><button id="logout" class="small-btn">Logout</button></header>
-<section class="stats"><div><strong id="pendingCount">0</strong><span>Pending</span></div><div><strong id="approvedCount">0</strong><span>Approved in user.js</span></div></section>
-<section class="admin-card"><div class="toolbar"><h2>Registered Users</h2><button id="refreshBtn" class="small-btn">Refresh</button></div><div id="msg" class="msg"></div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Status</th><th>Registered</th><th>Action</th></tr></thead><tbody id="usersBody"></tbody></table></div></section>
-<section id="editor" class="admin-card hidden"><h2>Prepare User for user.js</h2><div class="admin-grid"><div class="field"><label>Name</label><input id="editName"></div><div class="field"><label>Username</label><input id="editUsername"></div><div class="field"><label>Email</label><input id="editEmail" readonly></div><div class="field"><label>Role</label><select id="editRole"><option value="user">User</option><option value="staff">Staff</option><option value="supervisor">Supervisor</option><option value="admin">Admin</option><option value="HK">HK</option></select></div><div class="field"><label>Department</label><input id="editDepartment" value="Koveli Lounge"></div><div class="field"><label>Landing Page</label><input id="editLanding" value="home.html"></div></div><div class="field"><label>Generated user.js entry</label><textarea id="generated" rows="12" readonly></textarea></div><div class="action-row"><button id="generateBtn">Generate Entry</button><button id="copyBtn" class="secondary-action">Copy Entry</button><button id="markBtn" class="secondary-action">Mark Approved</button></div><p class="tiny">After copying, paste this object into <code>window.KOVELI_USERS</code> in <code>script/user.js</code>, commit/deploy it, then mark the registration approved.</p></section>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Koveli Lounge | Admin</title>
+
+    <link rel="stylesheet" href="styles/styles.css">
+    <link rel="stylesheet" href="styles/admin.css">
+</head>
+
+<body class="admin-body">
+
+<main class="admin-shell">
+
+    <header class="admin-header">
+
+        <img
+            src="assets/images/koveli-logo.png"
+            alt="Koveli Lounge"
+        >
+
+        <div>
+            <h1>User Administration</h1>
+            <p>Registered users waiting for authorization</p>
+        </div>
+
+        <button id="logout" class="small-btn">
+            Logout
+        </button>
+
+    </header>
+
+
+    <!-- STATISTICS -->
+
+    <section class="stats">
+
+        <div>
+            <strong id="pendingCount">0</strong>
+            <span>Pending Requests</span>
+        </div>
+
+        <div>
+            <strong id="approvedCount">0</strong>
+            <span>Users in user.js</span>
+        </div>
+
+    </section>
+
+
+    <!-- REGISTRATION REQUESTS -->
+
+    <section class="admin-card">
+
+        <div class="toolbar">
+
+            <h2>Registered Users</h2>
+
+            <button id="refreshBtn" class="small-btn">
+                Refresh
+            </button>
+
+        </div>
+
+        <div id="msg" class="msg"></div>
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Registered</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="usersBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+    <!-- USER EDITOR -->
+
+    <section
+        id="editor"
+        class="admin-card hidden"
+    >
+
+        <div class="editor-heading">
+
+            <div>
+                <h2>Prepare User for user.js</h2>
+
+                <p>
+                    Review the registration and prepare the
+                    authorized user entry.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="admin-grid">
+
+            <div class="field">
+                <label>Name</label>
+                <input id="editName">
+            </div>
+
+
+            <div class="field">
+                <label>Username</label>
+                <input id="editUsername">
+            </div>
+
+
+            <div class="field">
+                <label>Email</label>
+                <input id="editEmail" readonly>
+            </div>
+
+
+            <div class="field">
+
+                <label>Role</label>
+
+                <select id="editRole">
+                    <option value="user">User</option>
+                    <option value="staff">Staff</option>
+                    <option value="supervisor">Supervisor</option>
+                    <option value="admin">Admin</option>
+                    <option value="HK">HK</option>
+                </select>
+
+            </div>
+
+
+            <div class="field">
+
+                <label>Department</label>
+
+                <input
+                    id="editDepartment"
+                    value="Koveli Lounge"
+                >
+
+            </div>
+
+
+            <div class="field">
+
+                <label>Landing Page</label>
+
+                <input
+                    id="editLanding"
+                    value="home.html"
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="field">
+
+            <label>Generated user.js entry</label>
+
+            <textarea
+                id="generated"
+                rows="12"
+                readonly
+            ></textarea>
+
+        </div>
+
+
+        <div class="action-row">
+
+            <button id="generateBtn">
+                Generate Entry
+            </button>
+
+            <button
+                id="copyBtn"
+                class="secondary-action"
+            >
+                Copy Entry
+            </button>
+
+            <button
+                id="markBtn"
+                class="secondary-action"
+            >
+                Mark Approved
+            </button>
+
+            <button
+                id="deleteBtn"
+                class="danger-action"
+            >
+                Delete Request
+            </button>
+
+        </div>
+
+
+        <p class="tiny">
+
+            Add the generated entry to
+            <code>script/user.js</code> and deploy it.
+
+            After confirming that the user is in
+            <code>user.js</code>, click
+            <strong>Delete Request</strong>
+            to remove the registration request from Firebase.
+
+        </p>
+
+    </section>
+
 </main>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script><script src="script/config/firebase-config.js"></script><script src="script/user.js"></script><script src="script/admin/admin.js"></script></body></html>
+
+
+<!-- FIREBASE -->
+
+<script
+    src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
+</script>
+
+<script
+    src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js">
+</script>
+
+<script src="script/config/firebase-config.js"></script>
+
+<script src="script/user.js"></script>
+
+<script src="script/admin/admin.js"></script>
+
+</body>
+</html>
