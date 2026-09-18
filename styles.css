@@ -1,0 +1,166 @@
+:root {
+    --bg:#070707;
+    --card:#101010;
+    --field:#181818;
+    --gold:#e8bd52;
+    --gold2:#ffd96c;
+    --text:#f7f7f7;
+    --muted:#aaa;
+    --line:#333;
+    --danger:#ff6b6b;
+    --ok:#57d18b}
+
+    * {
+        box-sizing:border-box}
+
+        body {
+            margin:0;
+            min-height:100vh;
+            font-family:Inter,Arial,sans-serif;
+            background:radial-gradient(circle at 50% 0,#2a1b08 0,#0b0906 32%,#050505 68%);
+            color:var(--text);
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            padding:28px}
+
+            .shell {
+                width:min(460px,100%)}
+
+                .logo {
+                    display:block;
+                    width:min(310px,78vw);
+                    height:auto;
+                    margin:0 auto 20px;
+                    filter:drop-shadow(0 0 12px rgba(232,189,82,.15))}
+
+                    .card {
+                        background:rgba(13,13,13,.96);
+                        border:1px solid #715620;
+                        border-radius:20px;
+                        padding:28px;
+                        box-shadow:0 24px 70px #000}
+
+                        .card h1 {
+                            font-size:26px;
+                            margin:0 0 7px;
+                            text-align:center}
+
+                            .sub {
+                                color:var(--muted);
+                                text-align:center;
+                                margin:0 0 24px;
+                                font-size:14px}
+
+                                .field {
+                                    margin:14px 0}
+
+                                    .field label {
+                                        display:block;
+                                        font-size:13px;
+                                        color:#d9d9d9;
+                                        margin:0 0 7px}
+
+                                        .field input,.field select {
+                                            width:100%;
+                                            padding:14px 15px;
+                                            border-radius:10px;
+                                            border:1px solid #3b3b3b;
+                                            background:var(--field);
+                                            color:#fff;
+                                            outline:none;
+                                            font-size:15px}
+
+                                            .field input:focus,.field select:focus {
+                                                border-color:var(--gold)}
+
+                                                button,.btn {
+                                                    display:block;
+                                                    width:100%;
+                                                    border:0;
+                                                    border-radius:10px;
+                                                    padding:14px 16px;
+                                                    background:linear-gradient(135deg,var(--gold2),#dcae42);
+                                                    color:#161006;
+                                                    font-weight:800;
+                                                    font-size:15px;
+                                                    cursor:pointer;
+                                                    text-align:center;
+                                                    text-decoration:none}
+
+                                                    .btn.secondary {
+                                                        background:transparent;
+                                                        color:#fff;
+                                                        border:1px solid #8b6b2a}
+
+                                                        .links {
+                                                            display:flex;
+                                                            gap:12px;
+                                                            margin-top:14px}
+
+                                                            .links>* {
+                                                                flex:1}
+
+                                                                .msg {
+                                                                    display:none;
+                                                                    margin:15px 0 0;
+                                                                    padding:12px;
+                                                                    border-radius:9px;
+                                                                    font-size:13px;
+                                                                    line-height:1.45}
+
+                                                                    .msg.show {
+                                                                        display:block}
+
+                                                                        .msg.error {
+                                                                            background:#381717;
+                                                                            color:#ffd0d0;
+                                                                            border:1px solid #7b2d2d}
+
+                                                                            .msg.ok {
+                                                                                background:#123321;
+                                                                                color:#caffdf;
+                                                                                border:1px solid #275f40}
+
+                                                                                .tiny {
+                                                                                    font-size:12px;
+                                                                                    color:#888;
+                                                                                    line-height:1.55;
+                                                                                    margin-top:18px}
+
+                                                                                    .userbox {
+                                                                                        border:1px solid #333;
+                                                                                        background:#151515;
+                                                                                        border-radius:12px;
+                                                                                        padding:15px;
+                                                                                        margin:18px 0}
+
+                                                                                        .userbox b {
+                                                                                            color:var(--gold2)}
+
+                                                                                            code {
+                                                                                                color:#ffe39b}
+
+                                                                                                .spinner {
+                                                                                                    display:none;
+                                                                                                    margin-left:8px}
+
+                                                                                                    .loading .spinner {
+                                                                                                        display:inline}
+
+                                                                                                        .loading {
+                                                                                                            opacity:.8;
+                                                                                                            pointer-events:none}
+
+                                                                                                            @media(max-width:520px) {
+                                                                                                                body {
+                                                                                                                    padding:18px}
+
+                                                                                                                    .card {
+                                                                                                                        padding:22px}
+
+                                                                                                                        .links {
+                                                                                                                            flex-direction:column}
+
+                                                                                                                        }
+
