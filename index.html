@@ -2,2024 +2,1073 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Koveli Announcement</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Koveli Staff Portal - Dashboard</title>
+<meta name="theme-color" content="#eaf6ff">
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+<script src="script/firebase-config.js"></script>
+<link rel="stylesheet" href="css/portal-theme.css">
 <style>
-*{
-    box-sizing:border-box;
+.login-shell{width:min(560px,100%);margin:42px auto}.login-card{background:#fff;border:1px solid var(--p-line);border-radius:16px;box-shadow:var(--p-shadow);padding:24px}.login-brand{display:flex;align-items:center;gap:12px;margin-bottom:20px}.login-brand .mark{width:46px;height:46px;border-radius:12px;background:var(--p-primary);color:#fff;display:grid;place-items:center;font-weight:900;font-size:1.2rem}.login-brand h1{font-size:1.25rem;margin:0;color:#111827}.login-brand p{margin:3px 0 0;color:var(--p-muted);font-size:.82rem}.search-box{position:relative}.search-box input{width:100%;height:48px;border:1px solid #d1d5db;border-radius:10px;padding:0 13px;font-size:.95rem;outline:0}.search-box input:focus{border-color:var(--p-primary);box-shadow:0 0 0 3px rgba(37,99,235,.1)}.search-results{position:absolute;left:0;right:0;top:53px;background:#fff;border:1px solid var(--p-line);border-radius:12px;box-shadow:0 14px 35px rgba(15,23,42,.14);max-height:320px;overflow:auto;display:none;z-index:100}.search-result{padding:12px;border-bottom:1px solid #f0f1f2;cursor:pointer}.search-result:hover{background:#f8fafc}.search-result:last-child{border-bottom:0}.search-result b{display:block}.search-result small{color:var(--p-muted)}.login-help{margin-top:12px;font-size:.76rem;color:var(--p-muted)}
+.auth-overlay{position:fixed;inset:0;background:rgba(15,23,42,.48);display:none;align-items:center;justify-content:center;padding:14px;z-index:20000}.auth-overlay.show{display:flex}.auth-box{width:min(410px,100%);background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 24px 70px rgba(15,23,42,.26)}.auth-head{padding:14px 16px;background:#111827;color:#fff;display:flex;justify-content:space-between;align-items:center}.auth-head button{width:34px;height:34px;border:0;border-radius:9px;background:rgba(255,255,255,.12);color:#fff;font-size:20px}.auth-tabs{display:flex;gap:8px;padding:10px}.auth-tabs button{flex:1;border:1px solid var(--p-line);background:#f8fafc;padding:9px;border-radius:9px;font-weight:700}.auth-tabs button.active{background:var(--p-primary);color:#fff;border-color:var(--p-primary)}.auth-pane{display:none;padding:14px}.auth-pane.active{display:block}.pin-view{text-align:center;background:#f8fafc;border:1px solid var(--p-line);border-radius:10px;padding:13px;font-size:1.2rem;letter-spacing:8px}.pin-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.pin-keys button{height:46px;border:1px solid var(--p-line);border-radius:10px;background:#fff;font-size:1rem}.auth-error{min-height:20px;text-align:center;color:var(--p-danger);font-size:.78rem;margin-top:8px}.pattern-grid .dot{cursor:pointer}.dashboard{display:none}.dash-role{display:inline-flex;background:#eef2ff;color:#3730a3;border-radius:999px;padding:5px 9px;font-size:.7rem;font-weight:800}.login-status{padding:10px 12px;border-radius:10px;background:#f8fafc;border:1px solid var(--p-line);font-size:.78rem;color:var(--p-muted);margin-top:12px}
+
+.login-shell{width:min(620px,100%);margin:54px auto 30px!important}.login-card{background:linear-gradient(145deg,rgba(255,255,255,.98),rgba(236,248,255,.96))!important;border:1px solid #d4e9f6!important;border-radius:24px!important;box-shadow:0 24px 65px rgba(45,124,178,.14)!important;padding:30px!important}.login-brand{margin-bottom:24px!important}.login-brand .mark{width:58px!important;height:58px!important;border-radius:19px!important;background:linear-gradient(135deg,#2d8ed4,#65c2ee)!important;box-shadow:0 12px 25px rgba(45,142,212,.23)!important}.login-brand .mark i{font-size:22px}.login-brand h1{font-size:1.5rem!important;color:#174565!important}.login-brand p{font-size:.85rem!important;color:#6c8496!important}.search-box input{height:54px!important;border:1px solid #cfe3f0!important;border-radius:14px!important;background:#fff!important;padding:0 16px!important;color:#17384f!important}.search-box input:focus{border-color:#66b7e7!important;box-shadow:0 0 0 4px rgba(57,157,218,.12)!important}.search-results{top:59px!important;border-color:#d6e8f4!important;border-radius:14px!important}.search-result:hover{background:#eef8fe!important}.login-status{background:rgba(255,255,255,.7)!important;border-color:#d9e9f3!important;color:#698396!important;border-radius:12px!important}.login-help{color:#688397!important;display:flex;gap:7px;align-items:flex-start}.auth-head{background:linear-gradient(135deg,#4aa8df,#2b84ca)!important}.auth-tabs button.active{background:linear-gradient(135deg,#2c8ed3,#59b9ea)!important;border-color:#4aa8df!important}.pin-view{background:#f1f9fe!important;border-color:#d4e8f4!important;color:#315a75!important}.pin-keys button{border-color:#d7e8f3!important;color:#315f7c!important}.pin-keys button:hover{background:#edf8ff!important}
+
+.remember-login{
+ display:flex;
+ align-items:center;
+ gap:11px;
+ margin-top:14px;
+ padding:12px 14px;
+ border:1px solid #d7e8f3;
+ border-radius:13px;
+ background:rgba(255,255,255,.78);
+ color:#315f7c;
+ cursor:pointer;
+ user-select:none
+}
+.remember-login input{
+ width:19px;
+ height:19px;
+ accent-color:#2c8ed3;
+ flex:0 0 auto
+}
+.remember-login span{
+ display:flex;
+ flex-direction:column;
+ gap:2px
+}
+.remember-login strong{
+ font-size:.84rem
+}
+.remember-login small{
+ font-size:.72rem;
+ color:#7890a1
+}
+
+/* ===== ROLE AWARE OPERATIONS DASHBOARD v21 ===== */
+.ops-hero{
+  display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+  padding:22px 24px;margin:18px 0 16px;border-radius:22px;
+  background:linear-gradient(135deg,#eef9ff,#ffffff 58%,#f3f8ff);
+  border:1px solid #d8eaf5;box-shadow:0 15px 38px rgba(39,112,159,.10)
+}
+.ops-hero h1{margin:0;color:#164866;font-size:1.65rem}
+.ops-hero p{margin:5px 0 0;color:#718898;font-size:.84rem}
+.ops-role{padding:7px 12px;border-radius:999px;background:#e8f5ff;color:#176797;font-weight:850;font-size:.74rem}
+.ops-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:14px}
+.ops-stat{background:#fff;border:1px solid #dceaf3;border-radius:17px;padding:15px;box-shadow:0 8px 22px rgba(30,91,128,.06)}
+.ops-stat small{display:block;color:#758b9a;font-weight:700;font-size:.69rem;text-transform:uppercase;letter-spacing:.04em}
+.ops-stat strong{display:block;margin-top:5px;color:#173f59;font-size:1.55rem}
+.ops-stat span{display:block;margin-top:2px;color:#8ba0ad;font-size:.69rem}
+.ops-section{background:#fff;border:1px solid #dceaf3;border-radius:19px;padding:17px;margin:13px 0;box-shadow:0 8px 25px rgba(30,91,128,.055)}
+.ops-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.ops-section-head h2{margin:0;color:#1b4e6b;font-size:1rem}
+.ops-section-head small{color:#8499a6}
+.ops-tools{display:flex;flex-wrap:wrap;gap:7px}
+.ops-btn{border:0;border-radius:9px;padding:8px 11px;font-weight:800;font-size:.72rem;cursor:pointer}
+.ops-btn.primary{background:#268dcc;color:#fff}.ops-btn.success{background:#1d9b67;color:#fff}.ops-btn.danger{background:#d9534f;color:#fff}.ops-btn.soft{background:#eef7fc;color:#31647f;border:1px solid #d4e9f4}
+.ops-grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.ops-list{display:grid;gap:8px}
+.ops-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 12px;border:1px solid #e3edf3;border-radius:13px;background:#fbfdff}
+.ops-row.today{border-color:#a9d9f3;background:#f3fbff}
+.ops-main b{display:block;color:#244e66;font-size:.82rem}
+.ops-main small{display:block;color:#758a97;font-size:.71rem;margin-top:3px;line-height:1.45}
+.ops-side{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.ops-pill{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:.65rem;font-weight:850;text-transform:capitalize;background:#edf3f7;color:#567181}
+.ops-pill.pending{background:#fff3cd;color:#8b6612}.ops-pill.approved{background:#dcf8e9;color:#18764c}.ops-pill.rejected{background:#fde7e7;color:#a33939}.ops-pill.cancelled{background:#eeeef2;color:#66677a}
+.ops-empty{padding:20px;text-align:center;color:#8ba0ad;border:1px dashed #d9e6ee;border-radius:12px}
+.ops-filter{height:34px;border:1px solid #d7e6ef;border-radius:9px;background:#fff;padding:0 9px;color:#41647a;font-size:.73rem}
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.quick-action{display:flex;align-items:center;gap:9px;text-decoration:none;padding:12px;border:1px solid #dceaf3;border-radius:13px;background:#fbfdff;color:#315d76;font-weight:800;font-size:.77rem}
+.quick-icon{width:32px;height:32px;border-radius:10px;background:#e8f6ff;display:grid;place-items:center;color:#2588c5}
+@media(max-width:900px){.ops-stats{grid-template-columns:repeat(2,1fr)}.ops-grid2{grid-template-columns:1fr}}
+@media(max-width:560px){.ops-hero{padding:17px;align-items:flex-start;flex-direction:column}.ops-stats{grid-template-columns:1fr 1fr}.ops-row{grid-template-columns:1fr}.ops-side{justify-content:flex-start}.quick-grid{grid-template-columns:1fr}}
+
+/* ===== KOVELI MOBILE APP LOGIN + MODERN DASHBOARD ===== */
+:root{
+  --kv-gold:#d4af37;
+  --kv-gold-soft:#f4e7b4;
+  --kv-deep:#083a4a;
+  --kv-deep-2:#0d5364;
+  --kv-cream:#fbf8ef;
+  --kv-card:#ffffff;
+  --kv-text:#153746;
+  --kv-muted:#78909c;
+  --kv-line:#e6ecef;
+  --kv-green:#27a86b;
+  --kv-red:#d9544d;
+  --kv-shadow:0 14px 40px rgba(20,59,75,.10);
 }
 
 body{
-    margin:0;
-    font-family:Arial,Helvetica,sans-serif;
-    background:linear-gradient(135deg,#043e45,#087b82,#0aa6a6);
-    min-height:100vh;
-    color:#17383c;
+  background:
+    radial-gradient(circle at 10% 5%, rgba(212,175,55,.10), transparent 28%),
+    linear-gradient(180deg,#f8fbfc 0%,#f3f8fa 100%)!important;
+  min-height:100vh;
 }
 
-header{
-    padding:18px 28px;
-    color:white;
-    background:rgba(0,0,0,.18);
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
+.wrap{max-width:1180px;margin:auto;padding:14px!important}
+
+/* Login as mobile app */
+.login-shell{
+  width:min(430px,100%)!important;
+  margin:18px auto!important;
+}
+.login-card{
+  padding:18px!important;
+  border-radius:24px!important;
+  background:rgba(255,255,255,.96)!important;
+  border:1px solid #e6ecef!important;
+  box-shadow:0 20px 55px rgba(18,58,74,.12)!important;
+}
+.login-brand{
+  margin-bottom:14px!important;
+  align-items:center!important;
+}
+.login-brand .mark{
+  width:50px!important;height:50px!important;border-radius:16px!important;
+  background:linear-gradient(145deg,var(--kv-deep),var(--kv-deep-2))!important;
+  color:var(--kv-gold)!important;
+  box-shadow:none!important;
+}
+.login-brand h1{font-size:1.22rem!important;color:var(--kv-deep)!important}
+.login-brand p{font-size:.76rem!important;color:#7e919b!important}
+.search-box input{
+  height:48px!important;border-radius:14px!important;
+  border:1px solid #dfe8ec!important;
+}
+.login-status,.login-help{display:none!important}
+.remember-login{
+  padding:9px 11px!important;margin-top:10px!important;border-radius:12px!important;
+  background:#fafcfd!important;border-color:#e5ecef!important;
+}
+.remember-login small{display:none}
+
+/* Inline auth area */
+.auth-overlay{
+  position:static!important;
+  inset:auto!important;
+  background:transparent!important;
+  display:none!important;
+  padding:0!important;
+  z-index:auto!important;
+}
+.auth-overlay.show{display:block!important}
+.auth-box{
+  width:100%!important;
+  margin-top:12px!important;
+  border-radius:18px!important;
+  box-shadow:none!important;
+  border:1px solid #e4eaee!important;
+  overflow:hidden!important;
+}
+.auth-head{
+  padding:11px 12px!important;
+  background:linear-gradient(135deg,var(--kv-deep),var(--kv-deep-2))!important;
+}
+.auth-head button{display:none!important}
+.auth-tabs{padding:8px!important;gap:7px!important}
+.auth-tabs button{
+  padding:8px!important;border-radius:10px!important;font-size:.78rem!important
+}
+.auth-tabs button.active{
+  background:linear-gradient(135deg,#caa431,#e2c45f)!important;
+  border-color:#d4af37!important;color:#173642!important;
+}
+.auth-pane{padding:10px 12px 12px!important}
+#changeUserBtn{padding:8px!important;font-size:.76rem!important}
+.pin-view{
+  padding:10px!important;font-size:1.05rem!important;letter-spacing:7px!important;
+  background:#fbfcfc!important;
+}
+.pin-keys{gap:6px!important;margin-top:8px!important}
+.pin-keys button{height:40px!important;border-radius:9px!important}
+
+.pattern-wrapper{
+  max-width:285px!important;
+  height:285px!important;
+  margin:0 auto!important;
+}
+.pattern-grid{inset:14px!important}
+.pattern-grid .dot{width:28px!important;height:28px!important;box-shadow:0 0 0 7px rgba(212,175,55,.10)!important}
+.pattern-status{margin-top:5px!important;font-size:.74rem!important}
+.auth-error{min-height:16px!important;margin-top:4px!important}
+#patternReset{padding:8px!important}
+
+/* Dashboard shell */
+.dashboard{padding-bottom:28px}
+.ops-hero{
+  position:relative;overflow:hidden;
+  align-items:center!important;
+  padding:20px 22px!important;margin:6px 0 14px!important;
+  border-radius:24px!important;
+  background:linear-gradient(135deg,var(--kv-deep),#0b5365 68%,#11677a)!important;
+  border:0!important;box-shadow:var(--kv-shadow)!important;
+}
+.ops-hero:after{
+  content:"";
+  position:absolute;right:-35px;top:-55px;
+  width:180px;height:180px;border-radius:50%;
+  border:28px solid rgba(212,175,55,.14);
+}
+.ops-hero h1{font-size:1.55rem!important;color:#fff!important}
+.ops-hero p{color:#c5d8df!important}
+.ops-role{
+  background:rgba(212,175,55,.16)!important;color:#f3d878!important;
+  border:1px solid rgba(244,231,180,.28)!important;
+  z-index:1;
 }
 
-header h1{
-    margin:0;
-    font-size:25px;
+
+.ops-hero-left{display:flex;align-items:center;gap:14px;position:relative;z-index:2}
+.ops-hero-logo{
+  width:56px;height:56px;flex:0 0 56px;border-radius:18px;
+  display:grid;place-items:center;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(244,231,180,.25);
+  backdrop-filter:blur(6px)
+}
+.ops-hero-logo img{width:40px;height:40px;object-fit:contain;display:block}
+@media(max-width:700px){
+  .ops-hero-left{gap:11px}
+  .ops-hero-logo{width:48px;height:48px;flex-basis:48px;border-radius:15px}
+  .ops-hero-logo img{width:34px;height:34px}
 }
 
-header small{
-    opacity:.82;
+/* stat cards */
+.ops-stats{gap:10px!important}
+.ops-stat{
+  position:relative;overflow:hidden;
+  min-height:112px;
+  border:1px solid var(--kv-line)!important;
+  border-radius:18px!important;
+  padding:15px!important;
+  box-shadow:0 8px 24px rgba(16,57,73,.06)!important;
+}
+.ops-stat:before{
+  content:"";position:absolute;right:-16px;top:-16px;
+  width:62px;height:62px;border-radius:50%;
+  background:rgba(212,175,55,.10);
+}
+.ops-stat small{color:#778c96!important}
+.ops-stat strong{color:var(--kv-deep)!important}
+
+/* dashboard sections */
+.ops-section{
+  border:1px solid var(--kv-line)!important;
+  border-radius:20px!important;padding:16px!important;
+  box-shadow:0 9px 25px rgba(18,60,76,.055)!important;
+}
+.ops-section-head h2{color:var(--kv-deep)!important}
+.quick-grid{grid-template-columns:repeat(3,1fr)!important}
+.quick-action{
+  min-height:70px;
+  background:linear-gradient(180deg,#fff,#fbfcfc)!important;
+  border:1px solid #e5ecef!important;
+  border-radius:16px!important;
+  color:var(--kv-text)!important;
+}
+.quick-icon{
+  width:38px!important;height:38px!important;border-radius:12px!important;
+  background:#fff8df!important;color:#b48b12!important;
+  border:1px solid #f1e2a3;
+}
+.ops-row{border-color:#e7edf0!important;border-radius:14px!important}
+.ops-row.today{background:#fffaf0!important;border-color:#ead58b!important}
+.ops-btn.success{background:#208d61!important}
+.ops-btn.danger{background:#cf554f!important}
+.ops-btn.primary{background:var(--kv-deep-2)!important}
+.ops-btn.soft{background:#f4f8f9!important;color:#365d6a!important}
+
+/* Bottom-app feel on mobile */
+@media(max-width:700px){
+  .wrap{padding:10px!important}
+  .dashboard{padding-bottom:18px}
+  .ops-hero{padding:17px!important;border-radius:20px!important}
+  .ops-hero h1{font-size:1.32rem!important}
+  .ops-stats{grid-template-columns:1fr 1fr!important}
+  .ops-stat{min-height:100px;padding:13px!important}
+  .ops-stat strong{font-size:1.28rem!important}
+  .quick-grid{grid-template-columns:1fr!important}
+  .quick-action{min-height:56px!important}
+  .ops-section{padding:13px!important;border-radius:17px!important}
+}
+@media(max-height:760px){
+  .login-shell{margin:8px auto!important}
+  .login-card{padding:14px!important}
+  .login-brand{margin-bottom:10px!important}
+  .login-brand .mark{width:44px!important;height:44px!important}
+  .pattern-wrapper{max-width:250px!important;height:250px!important}
+  .remember-login{margin-top:8px!important;padding:7px 9px!important}
 }
 
-.container{
-    max-width:1200px;
-    margin:26px auto;
-    padding:0 20px 40px;
+
+/* =========================================================
+   PAGE HEADER USER AREA
+   User/role/logout live in dashboard header, never navbar
+   ========================================================= */
+
+/* Hide any user area produced by old/current shared navbar */
+.portal-navbar .portal-user,
+.portal-navbar .portal-user-area,
+.portal-navbar .portal-user-section,
+.portal-navbar .portal-user-info,
+.portal-navbar .portal-role-chip,
+.portal-navbar .portal-logout{
+  display:none !important;
 }
 
-.card{
-    background:white;
-    border-radius:18px;
-    padding:24px;
-    box-shadow:0 12px 35px rgba(0,0,0,.15);
-    margin-bottom:20px;
+.dashboard-user{
+  position:relative;
+  z-index:3;
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:8px;
+  flex-wrap:nowrap;
 }
 
-h2{
-    margin:0 0 18px;
-    color:#08747a;
-    font-size:19px;
+.dashboard-role{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:30px;
+  padding:0 10px;
+  border-radius:999px;
+  background:rgba(212,175,55,.16);
+  border:1px solid rgba(244,231,180,.30);
+  color:#f3d878;
+  font-size:9px;
+  font-weight:900;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  white-space:nowrap;
 }
 
-.grid{
-    display:grid;
-    grid-template-columns:repeat(3,1fr);
-    gap:15px;
+.dashboard-user-info{
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:4px 10px 4px 5px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:13px;
+  background:rgba(255,255,255,.08);
+  backdrop-filter:blur(7px);
+  -webkit-backdrop-filter:blur(7px);
+  min-width:0;
 }
 
-label{
-    display:block;
-    font-size:12px;
-    font-weight:bold;
-    color:#587377;
-    margin-bottom:6px;
+.dashboard-user-avatar{
+  width:32px;
+  height:32px;
+  flex:0 0 32px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:linear-gradient(145deg,#d4af37,#efd46e);
+  color:#083a4a;
+  font-size:12px;
+  font-weight:950;
+  text-transform:uppercase;
 }
 
-input,
-select,
-textarea{
+.dashboard-user-text{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  line-height:1.05;
+}
+
+.dashboard-user-text small{
+  margin-bottom:4px;
+  color:rgba(255,255,255,.58);
+  font-size:8px;
+  font-weight:700;
+}
+
+.dashboard-user-text strong{
+  max-width:165px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#fff;
+  font-size:11px;
+  font-weight:850;
+}
+
+.dashboard-logout{
+  min-height:40px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  padding:0 11px;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:12px;
+  background:rgba(255,255,255,.09);
+  color:#fff;
+  font-family:inherit;
+  font-size:10px;
+  font-weight:850;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:.16s ease;
+}
+
+.dashboard-logout:hover{
+  background:rgba(255,255,255,.16);
+}
+
+@media(max-width:700px){
+  .ops-hero{
+    align-items:stretch!important;
+  }
+
+  .dashboard-user{
     width:100%;
-    border:1px solid #cedfe1;
-    border-radius:10px;
-    padding:12px;
-    font-size:15px;
-    outline:none;
-    background:#fbfefe;
+    margin-left:0;
+    padding-top:12px;
+    border-top:1px solid rgba(255,255,255,.12);
+  }
+
+  .dashboard-user-info{
+    flex:1;
+  }
+
+  .dashboard-user-text strong{
+    max-width:140px;
+  }
+
+  .dashboard-logout{
+    width:40px;
+    padding:0;
+    flex:0 0 40px;
+  }
+
+  .dashboard-logout span{
+    display:none;
+  }
 }
 
-input:focus,
-select:focus,
-textarea:focus{
-    border-color:#07959b;
-    box-shadow:0 0 0 3px rgba(7,149,155,.1);
+</style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1e88e5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+
+<style id="dashboardRcNoV26">
+.dash-rcno{
+ display:inline-flex;
+ align-items:center;
+ margin-left:6px;
+ padding:2px 6px;
+ border-radius:999px;
+ background:#eef7fc;
+ border:1px solid #d4eaf6;
+ color:#48728a;
+ font-size:9px;
+ font-weight:800;
+ white-space:nowrap;
 }
-
-textarea{
-    min-height:260px;
-    line-height:1.8;
-    resize:vertical;
-    font-size:16px;
-}
-
-.language-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:10px;
-}
-
-.badge{
-    background:#e5f5f5;
-    color:#08787e;
-    border-radius:20px;
-    padding:6px 11px;
-    font-size:11px;
-    font-weight:bold;
-}
-
-.voice-box{
-    margin-top:20px;
-    display:grid;
-    grid-template-columns:2fr 1fr;
-    gap:15px;
-}
-
-.small{
-    font-size:11px;
-    color:#748a8d;
-    margin-top:6px;
-    line-height:1.5;
-}
-
-.voice-status{
-    margin-top:8px;
-    padding:10px 12px;
-    background:#f1f8f8;
-    border-radius:9px;
-    font-size:12px;
-}
-
-.actions{
-    display:grid;
-    grid-template-columns:2fr 1fr 1fr;
-    gap:10px;
-    margin-top:20px;
-}
-
-button{
-    border:0;
-    border-radius:11px;
-    padding:15px;
-    font-weight:bold;
-    cursor:pointer;
-}
-
-.play{
-    background:#078d92;
-    color:white;
-    font-size:16px;
-}
-
-.pause{
-    background:#efae37;
-}
-
-.stop{
-    background:#d84c4c;
-    color:white;
-}
-
-.status{
-    display:flex;
-    align-items:center;
-    gap:11px;
-    margin-top:18px;
-    padding:14px;
-    background:#eff7f7;
-    border-radius:11px;
-}
-
-.dot{
-    width:11px;
-    height:11px;
-    border-radius:50%;
-    background:#81999c;
-}
-
-.status.playing .dot{
-    background:#19b86b;
-    box-shadow:0 0 0 6px rgba(25,184,107,.12);
-}
-
-.status.error .dot{
-    background:#db4b4b;
-}
-
-.status.paused .dot{
-    background:#e5a52c;
-}
-
-.info{
-    margin-top:18px;
-    background:#eff9f9;
-    border:1px solid #d3eaea;
-    padding:14px;
-    border-radius:11px;
-    font-size:12px;
-    line-height:1.6;
-}
-
-@media(max-width:800px){
-
-    .grid{
-        grid-template-columns:1fr;
-    }
-
-    .voice-box{
-        grid-template-columns:1fr;
-    }
-
-    .actions{
-        grid-template-columns:1fr;
-    }
+@media(max-width:640px){
+ .dash-rcno{margin-left:3px;font-size:8px;padding:2px 5px}
 }
 </style>
+
 </head>
-
 <body>
-
-<header>
-
-<div>
-    <h1>🔊 Koveli Announcement</h1>
-    <small>Multilingual Boarding Announcement</small>
-</div>
-
-<div id="clock"></div>
-
-</header>
-
-
-<div class="container">
-
-
-<div class="card">
-
-<h2>Flight Information</h2>
-
-<div class="grid">
-
-
-<div>
-
-<label>Announcement Type</label>
-
-<select id="type">
-
-<option value="general">
-General Boarding
-</option>
-
-<option value="priority">
-Priority Boarding
-</option>
-
-<option value="special">
-Special Assistance
-</option>
-
-<option value="final">
-Final Boarding Call
-</option>
-
-</select>
-
-</div>
-
-
-<div>
-
-<label>Flight Number</label>
-
-<input
-    id="flight"
-    value="UL 116"
-    placeholder="UL 116"
->
-
-</div>
-
-
-<div>
-
-<label>Destination</label>
-
-<input
-    id="destination"
-    value="Abu Dhabi"
-    placeholder="Abu Dhabi"
->
-
-</div>
-
-
-<div>
-
-<label>Boarding Gate</label>
-
-<input
-    id="gate"
-    value="A01"
-    placeholder="A01"
->
-
-</div>
-
-
-<div>
-
-<label>Boarding Group</label>
-
-<input
-    id="group"
-    placeholder="Optional"
->
-
-</div>
-
-
-<div>
-
-<label>Announcement Language</label>
-
-<select id="language">
-
-<option value="en">
-English — Sonia
-</option>
-
-<option value="ar">
-العربية — Saudi Arabia
-</option>
-
-<option value="zh-HK">
-繁體中文 / 粵語 — Hong Kong Cantonese
-</option>
-
-<option value="ru">
-Русский — Female
-</option>
-
-<option value="it">
-Italiano
-</option>
-
-<option value="ja">
-日本語
-</option>
-
-</select>
-
-</div>
-
-
-</div>
-
-</div>
-
-
-
-<div class="card">
-
-
-<div class="language-header">
-
-<h2>
-Announcement
-</h2>
-
-<span
-    id="languageBadge"
-    class="badge"
->
-ENGLISH
-</span>
-
-</div>
-
-
-<textarea
-    id="announcement"
-></textarea>
-
-
-<div class="small">
-
-The announcement is generated directly in the selected
-language. You may make a final correction before playback.
-
-</div>
-
-
-
-<div class="voice-box">
-
-
-<div>
-
-<label>
-Selected Voice
-</label>
-
-<select id="voice"></select>
-
-<div
-    id="voiceStatus"
-    class="voice-status"
->
-Checking available voices...
-</div>
-
-<button
-    type="button"
-    id="refreshVoices"
-    style="margin-top:8px;padding:9px 12px;background:#e5f5f5;color:#08787e;"
->
-↻ Refresh Voices
-</button>
-
-</div>
-
-
-<div>
-
-<label>
-Speech Speed
-</label>
-
-<input
-    id="rate"
-    type="range"
-    min=".65"
-    max="1.15"
-    step=".01"
-    value=".88"
->
-
-<div
-    id="rateText"
-    class="small"
->
-0.88 ×
-</div>
-
-</div>
-
-
-</div>
-
-
-
-<div class="actions">
-
-<button
-    id="play"
-    class="play"
->
-▶ PLAY ANNOUNCEMENT
-</button>
-
-<button
-    id="pause"
-    class="pause"
->
-⏸ PAUSE
-</button>
-
-<button
-    id="stop"
-    class="stop"
->
-■ STOP
-</button>
-
-</div>
-
-
-
-<div
-    id="status"
-    class="status"
->
-
-<div class="dot"></div>
-
-<div>
-
-<strong id="statusTitle">
-READY
-</strong>
-
-<div
-    id="statusText"
-    class="small"
->
-Announcement ready.
-</div>
-
-</div>
-
-</div>
-
-
-
-<div class="info">
-
-<strong>Native announcement mode:</strong>
-
-The system does not translate an English announcement.
-
-When you select a language, it builds the boarding call
-using the wording defined specifically for that language.
-
-Flight number, destination, boarding gate and boarding group
-are inserted into that language's announcement template.
-
-</div>
-
-
-</div>
-
-</div>
-
+<main class="wrap">
+<section id="loginView" class="login-shell">
+  <div class="login-card">
+    <div class="login-brand"><div class="mark"><img src="Kovelilogo.png" alt="Koveli" style="width:34px;height:34px;object-fit:contain"></div><div><h1>Koveli Staff Portal</h1><p>People • Progress • Together</p></div></div>
+    <div class="search-box"><input id="staffSearch" type="text" placeholder="Search by name or staff ID" autocomplete="off"><div id="searchResults" class="search-results"></div></div>
+    <div id="loginStatus" class="login-status">Connecting to staff database…</div>
+    <div class="login-help"><i class="fa-solid fa-shield-halved"></i> Select your profile, then verify with your PIN or saved pattern.</div>
+    <div class="auth-overlay" id="authOverlay"><div class="auth-box"><div class="auth-head"><b id="authName">Verify identity</b><button id="authClose" type="button">×</button></div><div class="auth-tabs"><button id="pinTab" type="button">PIN</button><button id="patternTab" class="active" type="button">Pattern</button></div>
+<div style="padding:0 10px 10px">
+  <button id="changeUserBtn" type="button" class="action-btn" style="width:100%;background:#eef8ff;color:#24516f;border:1px solid #d4e8f4">
+    <i class="fa-solid fa-users"></i> Change User
+  </button>
+</div><div id="pinPane" class="auth-pane"><div id="pinView" class="pin-view">----</div><div id="pinKeys" class="pin-keys"></div><div style="display:flex;gap:8px;margin-top:8px"><button id="pinClear" class="action-btn" style="flex:1">Clear</button><button id="pinDelete" class="action-btn" style="flex:1">⌫</button></div><div id="pinError" class="auth-error"></div></div><div id="patternPane" class="auth-pane active"><div class="pattern-wrapper" id="loginPatternWrapper"><canvas id="loginPatternCanvas"></canvas><div class="pattern-grid" id="loginPatternGrid"></div></div><div class="pattern-status" id="loginPatternStatus">Draw your pattern</div><div id="patternError" class="auth-error"></div><button id="patternReset" class="action-btn" style="width:100%" type="button">Reset</button></div></div></div>
+    <label class="remember-login">
+      <input id="rememberMe" type="checkbox" checked>
+      <span>
+        <strong>Remember me</strong>
+        <small>Keep me signed in on this device</small>
+      </span>
+    </label>
+  </div>
+</section>
+
+<section id="dashboard" class="dashboard">
+  <div class="ops-hero">
+    <div class="ops-hero-left">
+      <div class="ops-hero-logo">
+        <img src="Kovelilogo.png" alt="Koveli">
+      </div>
+      <div>
+        <h1 id="dashGreeting">Dashboard</h1>
+        <p id="dashDate">Your daily Koveli workspace</p>
+      </div>
+    </div>
+    <div class="dashboard-user">
+      <span id="dashRole" class="dashboard-role">Staff</span>
+
+      <div class="dashboard-user-info">
+        <div id="dashUserAvatar" class="dashboard-user-avatar">S</div>
+        <div class="dashboard-user-text">
+          <small>Signed in as</small>
+          <strong id="dashUserName">Staff</strong>
+        </div>
+      </div>
+
+      <button id="dashLogout" class="dashboard-logout" type="button" title="Logout">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="ops-stats">
+    <div class="ops-stat"><small>Sick Leave Balance</small><strong id="dashSick">—</strong><span>Available days</span></div>
+    <div class="ops-stat"><small>FRL Balance</small><strong id="dashFrl">—</strong><span>Available days</span></div>
+    <div class="ops-stat"><small id="stat3Label">My Pending</small><strong id="dashPending">0</strong><span id="stat3Sub">Leave + duty</span></div>
+    <div class="ops-stat"><small id="stat4Label">Today's Activity</small><strong id="dashDuty">0</strong><span id="stat4Sub">Requests today</span></div>
+  </div>
+
+  <div class="ops-section">
+    <div class="ops-section-head"><h2><i class="fa-solid fa-bolt"></i> Quick Actions</h2></div>
+    <div class="quick-grid">
+      <a class="quick-action" href="roster-view.html"><span class="quick-icon"><i class="fa-solid fa-calendar-check"></i></span><span>Duty Roster</span></a>
+      <a class="quick-action" href="leaveapp.html"><span class="quick-icon"><i class="fa-solid fa-file-circle-plus"></i></span><span>Apply / View Leave</span></a>
+      <a class="quick-action" href="annualleave.html"><span class="quick-icon"><i class="fa-solid fa-calendar-days"></i></span><span>Annual Leave Calendar</span></a>
+      <a class="quick-action" href="dutychange.html"><span class="quick-icon"><i class="fa-solid fa-right-left"></i></span><span>Duty Change</span></a>
+    </div>
+  </div>
+
+  <div id="staffDashboardArea">
+    <div class="ops-grid2">
+      <div class="ops-section">
+        <div class="ops-section-head"><h2>🌴 My Leave Requests</h2><small>Pending can be cancelled</small></div>
+        <div id="myLeaveDash" class="ops-list"><div class="ops-empty">Loading…</div></div>
+      </div>
+      <div class="ops-section">
+        <div class="ops-section-head"><h2>🔄 My Duty Changes</h2><small>Pending can be cancelled</small></div>
+        <div id="myDutyDash" class="ops-list"><div class="ops-empty">Loading…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="supervisorDashboardArea" style="display:none">
+    <div class="ops-grid2">
+      <div class="ops-section">
+        <div class="ops-section-head"><h2>🌴 Staff Leave — Today & Future</h2><small>Supervisor view</small></div>
+        <div id="supervisorLeaveList" class="ops-list"><div class="ops-empty">Loading…</div></div>
+      </div>
+      <div class="ops-section">
+        <div class="ops-section-head"><h2>🔄 Duty Changes — Today & Future</h2><small>Supervisor view</small></div>
+        <div id="supervisorDutyList" class="ops-list"><div class="ops-empty">Loading…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminDashboardArea" style="display:none">
+    <div class="ops-grid2">
+      <div class="ops-section">
+        <div class="ops-section-head">
+          <h2>✅ Pending Leave Approvals</h2>
+          <small>One-click approval</small>
+        </div>
+        <div id="adminPendingLeaves" class="ops-list"><div class="ops-empty">Loading…</div></div>
+      </div>
+      <div class="ops-section">
+        <div class="ops-section-head">
+          <h2>✅ Pending Duty Change Approvals</h2>
+          <small>One-click approval</small>
+        </div>
+        <div id="adminPendingDuty" class="ops-list"><div class="ops-empty">Loading…</div></div>
+      </div>
+    </div>
+
+    <div class="ops-section">
+      <div class="ops-section-head">
+        <h2>📚 All Leave Transactions — Past & Future</h2>
+        <div class="ops-tools">
+          <select id="adminLeaveFilter" class="ops-filter">
+            <option value="all">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div id="adminAllLeaves" class="ops-list"><div class="ops-empty">Loading…</div></div>
+    </div>
+
+    <div class="ops-section">
+      <div class="ops-section-head">
+        <h2>📚 All Duty Changes — Past & Future</h2>
+        <div class="ops-tools">
+          <select id="adminDutyFilter" class="ops-filter">
+            <option value="all">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div id="adminAllDuty" class="ops-list"><div class="ops-empty">Loading…</div></div>
+    </div>
+  </div>
+</section>
+</main>
 
 <script>
-
-/* =========================================================
-   ELEMENTS
-========================================================= */
-
-const synth =
-    window.speechSynthesis;
-
-const typeEl =
-    document.getElementById("type");
-
-const flightEl =
-    document.getElementById("flight");
-
-const destinationEl =
-    document.getElementById("destination");
-
-const gateEl =
-    document.getElementById("gate");
-
-const groupEl =
-    document.getElementById("group");
-
-const languageEl =
-    document.getElementById("language");
-
-const announcementEl =
-    document.getElementById("announcement");
-
-const voiceEl =
-    document.getElementById("voice");
-
-
-let voices = [];
-
-let currentSpeech = null;
-
-let paused = false;
-let voiceLoadAttempts = 0;
-
-
-/* =========================================================
-   LANGUAGE / VOICE PREFERENCES
-========================================================= */
-
-const languageSettings = {
-
-    en:{
-
-        name:"English",
-
-        locale:"en-GB",
-
-        rtl:false,
-
-        /*
-        Prefer Microsoft Sonia.
-        */
-
-        voicePreference:[
-            "Microsoft Sonia Online",
-            "Microsoft Sonia",
-            "Sonia"
-        ]
-
-    },
-
-
-    ar:{
-
-        name:"Arabic — Saudi Arabia",
-
-        locale:"ar-SA",
-
-        rtl:true,
-
-        /*
-        Prefer Saudi Arabic voices.
-
-        The exact voice name depends on
-        Windows/browser installation.
-        */
-
-        voicePreference:[
-            "Zariyah",
-            "Hamed",
-            "Saudi",
-            "ar-SA"
-        ]
-
-    },
-
-
-    "zh-HK":{
-
-        name:"Hong Kong Cantonese",
-
-        locale:"zh-HK",
-
-        rtl:false,
-
-        /*
-        Cantonese / Traditional Chinese
-        Hong Kong voice.
-        */
-
-        voicePreference:[
-            "HiuGaai",
-            "HiuMaan",
-            "Tracy",
-            "Cantonese",
-            "Hong Kong",
-            "zh-HK"
-        ]
-
-    },
-
-
-    ru:{
-
-        name:"Russian — Female",
-
-        locale:"ru-RU",
-
-        rtl:false,
-
-        /*
-        Prefer known female voice names
-        before falling back to ru-RU.
-        */
-
-        voicePreference:[
-            "Svetlana",
-            "Irina",
-            "Milena",
-            "Alena",
-            "Female"
-        ]
-
-    },
-
-
-    it:{
-
-        name:"Italian",
-
-        locale:"it-IT",
-
-        rtl:false,
-
-        voicePreference:[
-            "Elsa",
-            "Isabella",
-            "Diego",
-            "it-IT"
-        ]
-
-    },
-
-
-    ja:{
-
-        name:"Japanese",
-
-        locale:"ja-JP",
-
-        rtl:false,
-
-        voicePreference:[
-            "Nanami",
-            "Haruka",
-            "Ayumi",
-            "ja-JP"
-        ]
-
-    }
-
+const SESSION_KEY='staffPortalSession',LAST_USER_KEY='staffPortalLastUser',ACTIVE_SESSION_KEY='koveliActiveSession',REMEMBER_LOGIN_KEY='koveliRememberLogin';let db=null,staff=[],selected=null,pin='',patternSeq=[],patternDrawing=false,patternPointer=null;
+const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function getSession(){
+ try{
+  const s=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');
+  if(!s||!s.id)return null;
+
+  const remembered=localStorage.getItem(REMEMBER_LOGIN_KEY)==='1';
+
+  // Remember Me keeps the verified login on this device.
+  // Without Remember Me, keep the existing 24-hour session behavior.
+  if(!remembered && Date.now()-(s.timestamp||0)>86400000){
+   localStorage.removeItem(SESSION_KEY);
+   return null;
+  }
+
+  return s;
+ }catch{return null}
+}
+function getLastUser(){try{return JSON.parse(localStorage.getItem(LAST_USER_KEY)||'null')}catch{return null}}
+function isActiveSession(){
+ return localStorage.getItem(REMEMBER_LOGIN_KEY)==='1' ||
+        sessionStorage.getItem(ACTIVE_SESSION_KEY)==='1';
+}
+function getAfterLogin(){const p=new URLSearchParams(location.search);const value=p.get('afterLogin')||'';if(!value)return '';if(value.includes('://')||value.startsWith('//'))return '';return value}
+function greeting(){const h=new Date().getHours();return h<12?'Good morning':h<17?'Good afternoon':'Good evening'}
+async function init(){
+ const rememberBox=$('rememberMe');
+ if(rememberBox){
+  rememberBox.checked=
+   localStorage.getItem(REMEMBER_LOGIN_KEY)==='1';
+ }
+
+ const existing=getSession();
+ if(existing&&isActiveSession()){
+  showDashboard(existing);
+  return;
+ }
+
+ if(!isActiveSession()){
+  localStorage.removeItem(SESSION_KEY);
+ }
+
+ initPattern();
+ buildPin();
+
+ try{
+  if(!window.firebase?.firestore){
+   throw new Error('Firebase not available');
+  }
+
+  db=firebase.firestore();
+
+  const snap=await db.collection('staff').get();
+
+  staff=snap.docs
+   .map(d=>({
+    id:d.id,
+    ...d.data(),
+    rcno:d.data().rcno||d.id
+   }))
+   .filter(x=>x.name)
+   .sort((a,b)=>a.name.localeCompare(b.name));
+
+  $('loginStatus').textContent=`${staff.length} staff profiles available`;
+
+  const remembered=getLastUser();
+
+  if(remembered?.id){
+   const last=staff.find(
+    s=>String(s.id)===String(remembered.id)
+   );
+
+   if(last){
+    $('staffSearch').value=last.name;
+
+    // User name is already visible, so show PIN/pattern immediately.
+    requestAnimationFrame(()=>{
+     openAuth(last);
+    });
+   }
+  }
+
+ }catch(e){
+  $('loginStatus').textContent='Could not connect to Firebase. Check firebase-config.js';
+  console.error(e);
+ }
+}
+$('staffSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),digits=q.replace(/\D/g,'');const out=staff.filter(s=>s.name.toLowerCase().includes(q)||String(s.rcno||s.id).toLowerCase().includes(q)||(digits&&String(s.rcno||'').replace(/\D/g,'').includes(digits))).slice(0,20);const box=$('searchResults');if(q.length<2){box.style.display='none';return}box.innerHTML=out.length?out.map((s,i)=>`<div class="search-result" data-i="${i}"><b>${esc(s.name)}</b><small>${esc(s.rcno||s.id)} · ${esc(s.role||'Staff')}</small></div>`).join(''):'<div class="search-result">No matching staff</div>';box.style.display='block';box.querySelectorAll('[data-i]').forEach(el=>el.onclick=()=>openAuth(out[+el.dataset.i]));});
+function openAuth(s){selected=s;pin='';resetPattern();$('staffSearch').value=s.name;$('searchResults').style.display='none';$('authName').textContent=s.name;$('pinView').textContent='----';$('pinError').textContent='';$('patternError').textContent='';$('authOverlay').classList.add('show');setTab('pattern')}
+function closeAuth(){
+ $('authOverlay').classList.remove('show');
+ selected=null;
+ pin='';
+ resetPattern();
+
+ // Keep the remembered name visible, but allow normal editing.
+ setTimeout(()=>{
+  $('staffSearch').focus();
+  $('staffSearch').select();
+ },50);
+}
+
+function changeUser(){
+ $('authOverlay').classList.remove('show');
+ selected=null;
+ pin='';
+ resetPattern();
+
+ $('staffSearch').value='';
+ $('searchResults').innerHTML='';
+ $('searchResults').style.display='none';
+
+ setTimeout(()=>{
+  $('staffSearch').focus();
+ },50);
+}
+
+$('authClose').onclick=closeAuth;
+$('changeUserBtn').onclick=changeUser;
+$('authOverlay').onclick=e=>{};
+function setTab(t){const p=t==='pin';$('pinTab').classList.toggle('active',p);$('patternTab').classList.toggle('active',!p);$('pinPane').classList.toggle('active',p);$('patternPane').classList.toggle('active',!p);if(!p)setTimeout(drawPattern,30)}$('pinTab').onclick=()=>setTab('pin');$('patternTab').onclick=()=>setTab('pattern');
+function buildPin(){for(const n of [1,2,3,4,5,6,7,8,9,0]){const b=document.createElement('button');b.type='button';b.textContent=n;b.onclick=()=>{if(pin.length<8)pin+=n;$('pinView').textContent='*'.repeat(pin.length)||'----';if(selected&&String(selected.pass||'')===pin)finishLogin()};$('pinKeys').appendChild(b)}$('pinClear').onclick=()=>{pin='';$('pinView').textContent='----'};$('pinDelete').onclick=()=>{pin=pin.slice(0,-1);$('pinView').textContent='*'.repeat(pin.length)||'----'}}
+function initPattern(){const grid=$('loginPatternGrid');grid.innerHTML='';for(let i=1;i<=9;i++){const d=document.createElement('div');d.className='dot';d.dataset.value=i;grid.appendChild(d)}const w=$('loginPatternWrapper');w.addEventListener('pointerdown',patternDown);w.addEventListener('pointermove',patternMove);w.addEventListener('pointerup',patternUp);w.addEventListener('pointercancel',patternUp);$('patternReset').onclick=resetPattern;addEventListener('resize',drawPattern)}
+function point(e){const r=$('loginPatternWrapper').getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+function hitDot(e){const els=document.elementsFromPoint(e.clientX,e.clientY);return els.find(x=>x.classList?.contains('dot')&&x.closest('#loginPatternGrid'))||null}
+function addPatternDot(dot){if(!dot)return;const v=+dot.dataset.value;if(patternSeq.at(-1)===v)return;if(patternSeq.includes(v)){patternSeq=patternSeq.slice(0,patternSeq.indexOf(v)+1)}else patternSeq.push(v);updatePatternDots()}
+function patternDown(e){if(!selected)return;e.preventDefault();patternDrawing=true;patternPointer=point(e);$('loginPatternWrapper').setPointerCapture?.(e.pointerId);addPatternDot(hitDot(e));drawPattern(patternPointer)}
+function patternMove(e){if(!patternDrawing)return;e.preventDefault();patternPointer=point(e);addPatternDot(hitDot(e));drawPattern(patternPointer)}
+function patternUp(e){if(!patternDrawing)return;e.preventDefault();patternDrawing=false;patternPointer=null;drawPattern();if(!patternSeq.length)return;if(selected&&patternSeq.join('')===String(selected.pattern||''))finishLogin();else{$('patternError').textContent='Wrong pattern';setTimeout(resetPattern,650)}}
+function updatePatternDots(){document.querySelectorAll('#loginPatternGrid .dot').forEach(d=>d.classList.toggle('temp-selected',patternSeq.includes(+d.dataset.value)));$('loginPatternStatus').textContent=patternSeq.length?`${patternSeq.length} dots selected`:'Draw your pattern'}
+function center(v){const d=document.querySelector(`#loginPatternGrid .dot[data-value="${v}"]`),w=$('loginPatternWrapper').getBoundingClientRect(),r=d.getBoundingClientRect();return{x:r.left-w.left+r.width/2,y:r.top-w.top+r.height/2}}
+function drawPattern(cursor=null){const c=$('loginPatternCanvas'),w=$('loginPatternWrapper');if(!c||!w)return;const r=w.getBoundingClientRect(),dpr=devicePixelRatio||1;c.width=Math.max(1,Math.round(r.width*dpr));c.height=Math.max(1,Math.round(r.height*dpr));c.style.width=r.width+'px';c.style.height=r.height+'px';const x=c.getContext('2d');x.scale(dpr,dpr);x.clearRect(0,0,r.width,r.height);if(!patternSeq.length)return;x.beginPath();patternSeq.forEach((v,i)=>{const p=center(v);i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y)});if(cursor&&patternDrawing)x.lineTo(cursor.x,cursor.y);x.strokeStyle='#2563eb';x.lineWidth=5;x.lineCap='round';x.lineJoin='round';x.stroke()}
+function resetPattern(){patternSeq=[];patternDrawing=false;patternPointer=null;$('patternError').textContent='';updatePatternDots();drawPattern()}
+async function finishLogin(){
+ if(!selected)return;
+
+ const remember=
+  !!$('rememberMe')?.checked;
+
+ const s={
+  id:selected.id,
+  name:selected.name,
+  role:selected.role||'Staff',
+  rcno:selected.rcno||selected.id,
+  contact:selected.contact||'',
+  email:selected.email||'',
+  pass:selected.pass||'',
+  pattern:selected.pattern||'',
+  annualLeave:selected.annualLeave??21,
+  sickLeave:selected.sickLeave??30,
+  frlBalance:selected.frlBalance??5,
+  frlRenewal:selected.frlRenewal||null,
+  timestamp:Date.now(),
+  rememberMe:remember
+ };
+
+ localStorage.setItem(
+  SESSION_KEY,
+  JSON.stringify(s)
+ );
+
+ localStorage.setItem(
+  LAST_USER_KEY,
+  JSON.stringify({
+   id:s.id,
+   name:s.name,
+   role:s.role,
+   rcno:s.rcno,
+   email:s.email||''
+  })
+ );
+
+ if(remember){
+  localStorage.setItem(
+   REMEMBER_LOGIN_KEY,
+   '1'
+  );
+ }else{
+  localStorage.removeItem(
+   REMEMBER_LOGIN_KEY
+  );
+ }
+
+ sessionStorage.setItem(
+  ACTIVE_SESSION_KEY,
+  '1'
+ );
+
+ try{
+  await window.KoveliDutyPush
+   ?.syncForLoggedInUser?.();
+ }catch(e){
+  console.warn(
+   'Push user sync:',
+   e
+  );
+ }
+
+ const after=getAfterLogin();
+ if(after){
+  location.href=after;
+  return;
+ }
+
+ location.href='index.html';
+}
+let dashLeaves=[],dashDutyChanges=[],dashSession=null;
+
+function normalizeRole(v){
+ const r=String(v||'staff').toLowerCase();
+ return r==='admin'?'admin':(r==='supervisor'?'supervisor':'staff');
+}
+function todayMale(){
+ const parts=new Intl.DateTimeFormat('en-CA',{
+  timeZone:'Indian/Maldives',year:'numeric',month:'2-digit',day:'2-digit'
+ }).formatToParts(new Date());
+ const g=t=>parts.find(x=>x.type===t)?.value||'';
+ return `${g('year')}-${g('month')}-${g('day')}`;
+}
+function dateOf(x,kind){
+ return String(kind==='leave'?(x.date||x.startDate||''):(x.swapDate||x.date||''));
+}
+function statusOf(x){return String(x.status||'pending').toLowerCase()}
+function statusPill(s){const v=statusOf({status:s});return `<span class="ops-pill ${esc(v)}">${esc(v)}</span>`}
+function sortByDate(rows,kind,desc=false){
+ return [...rows].sort((a,b)=>{
+  const da=dateOf(a,kind),dbb=dateOf(b,kind);
+  return desc?dbb.localeCompare(da):da.localeCompare(dbb);
+ });
+}
+function leaveLabel(x){return x.leaveType||x.type||'Leave'}
+function leaveRow(x,{adminActions=false,myActions=false}={}){
+ const st=statusOf(x),today=dateOf(x,'leave')===todayMale();
+ return `<div class="ops-row${today?' today':''}">
+  <div class="ops-main">
+   <b>${staffIdentity(x.staffName||x.name, x.staffRcno||x.rcno, x.staffId)} · ${esc(leaveLabel(x))}</b>
+   <small>📅 ${esc(dateOf(x,'leave')||'—')} ${x.dutyTime?' · '+esc(x.dutyTime):''}${x.reason?' · '+esc(x.reason):''}${x.staffAccepted===true&&st==='pending'?' · Receiver accepted — Admin approval pending':''}${st==='approved'?' · Approved by '+esc(x.reviewedBy||'Admin'):''}</small>
+  </div>
+  <div class="ops-side">
+   ${statusPill(st)}
+   ${adminActions&&st==='pending'?`<button class="ops-btn success" onclick="dashboardApproveLeave('${esc(x.id)}')">Approve</button>`:''}
+   ${myActions&&st==='pending'?`<button class="ops-btn danger" onclick="dashboardCancelLeave('${esc(x.id)}')">Cancel</button>`:''}
+  </div>
+ </div>`;
+}
+function dutyRow(x,{adminActions=false,myActions=false}={}){
+ const st=statusOf(x),today=dateOf(x,'duty')===todayMale();
+ return `<div class="ops-row${today?' today':''}">
+  <div class="ops-main">
+   <b>${staffIdentity(x.requesterName, x.requesterRcNo||x.requesterRcno, x.requesterId)} ↔ ${staffIdentity(x.acceptStaffName, x.acceptStaffRcNo||x.acceptStaffRcno, x.acceptStaffId)}</b>
+   <small>📅 ${esc(dateOf(x,'duty')||'—')} · ${esc(x.requesterDuty||'—')} ↔ ${esc(x.acceptStaffDuty||'—')}${x.reason?' · '+esc(x.reason):''}${st==='approved'?' · Approved by '+esc(x.reviewedBy||'Admin'):''}</small>
+  </div>
+  <div class="ops-side">
+   ${statusPill(st)}
+   ${adminActions&&st==='pending'?`<button class="ops-btn success" onclick="dashboardApproveDuty('${esc(x.id)}')">Approve</button>`:''}
+   ${myActions&&st==='pending'?`<button class="ops-btn danger" onclick="dashboardCancelDuty('${esc(x.id)}')">Cancel</button>`:''}
+  </div>
+ </div>`;
+}
+function renderDashLists(){
+ const s=dashSession,role=normalizeRole(s?.role),today=todayMale();
+ const myLeaves=dashLeaves.filter(x=>String(x.staffId)===String(s.id));
+ const myDuty=dashDutyChanges.filter(x=>String(x.requesterId)===String(s.id));
+ $('myLeaveDash').innerHTML=sortByDate(myLeaves,'leave',true).slice(0,20).map(x=>leaveRow(x,{myActions:true})).join('')||'<div class="ops-empty">No leave requests</div>';
+ $('myDutyDash').innerHTML=sortByDate(myDuty,'duty',true).slice(0,20).map(x=>dutyRow(x,{myActions:true})).join('')||'<div class="ops-empty">No duty changes</div>';
+
+ const futureLeaves=sortByDate(dashLeaves.filter(x=>dateOf(x,'leave')>=today && ['pending','approved'].includes(statusOf(x))),'leave');
+ const futureDuty=sortByDate(dashDutyChanges.filter(x=>dateOf(x,'duty')>=today && ['pending','approved'].includes(statusOf(x))),'duty');
+
+ if(role==='supervisor'){
+  $('supervisorLeaveList').innerHTML=futureLeaves.map(x=>leaveRow(x)).join('')||'<div class="ops-empty">No leave reported for today or future dates</div>';
+  $('supervisorDutyList').innerHTML=futureDuty.map(x=>dutyRow(x)).join('')||'<div class="ops-empty">No duty changes for today or future dates</div>';
+ }
+ if(role==='admin'){
+  const pendingLeaves=sortByDate(dashLeaves.filter(x=>statusOf(x)==='pending'),'leave');
+  const pendingDuty=sortByDate(dashDutyChanges.filter(x=>statusOf(x)==='pending'),'duty');
+  $('adminPendingLeaves').innerHTML=pendingLeaves.map(x=>leaveRow(x,{adminActions:true})).join('')||'<div class="ops-empty">No pending leave approvals</div>';
+  $('adminPendingDuty').innerHTML=pendingDuty.map(x=>dutyRow(x,{adminActions:true})).join('')||'<div class="ops-empty">No pending duty change approvals</div>';
+  renderAdminHistory();
+ }
+}
+function renderAdminHistory(){
+ if(normalizeRole(dashSession?.role)!=='admin')return;
+ const lf=$('adminLeaveFilter')?.value||'all',df=$('adminDutyFilter')?.value||'all';
+ const leaves=sortByDate(dashLeaves.filter(x=>lf==='all'||statusOf(x)===lf),'leave',true);
+ const duty=sortByDate(dashDutyChanges.filter(x=>df==='all'||statusOf(x)===df),'duty',true);
+ $('adminAllLeaves').innerHTML=leaves.map(x=>leaveRow(x,{adminActions:true})).join('')||'<div class="ops-empty">No leave transactions</div>';
+ $('adminAllDuty').innerHTML=duty.map(x=>dutyRow(x,{adminActions:true})).join('')||'<div class="ops-empty">No duty change transactions</div>';
+}
+async function reloadDashboardData(){
+ const [ls,ds]=await Promise.all([
+  db.collection('leaveRequests').get(),
+  db.collection('dutyChanges').get()
+ ]);
+ dashLeaves=ls.docs.map(d=>({id:d.id,...d.data()}));
+ dashDutyChanges=ds.docs.map(d=>({id:d.id,...d.data()}));
+ renderDashLists();
+ const s=dashSession,role=normalizeRole(s.role),today=todayMale();
+ const myLeaves=dashLeaves.filter(x=>String(x.staffId)===String(s.id));
+ const myDuty=dashDutyChanges.filter(x=>String(x.requesterId)===String(s.id));
+ $('dashPending').textContent=role==='staff'
+  ? myLeaves.filter(x=>statusOf(x)==='pending').length+myDuty.filter(x=>statusOf(x)==='pending').length
+  : dashLeaves.filter(x=>statusOf(x)==='pending').length+dashDutyChanges.filter(x=>statusOf(x)==='pending').length;
+ $('dashDuty').textContent=dashLeaves.filter(x=>dateOf(x,'leave')===today&&['pending','approved'].includes(statusOf(x))).length+
+  dashDutyChanges.filter(x=>dateOf(x,'duty')===today&&['pending','approved'].includes(statusOf(x))).length;
+}
+async function portalNotify(payload){
+ try{
+  if(window.PortalNotify?.send) await window.PortalNotify.send(payload);
+ }catch(e){console.warn('Inbox notify:',e)}
+}
+window.dashboardApproveLeave=async function(id){
+ if(normalizeRole(dashSession?.role)!=='admin')return alert('Only Admin can approve leave.');
+ const x=dashLeaves.find(r=>r.id===id);if(!x||statusOf(x)!=='pending')return;
+ await db.collection('leaveRequests').doc(id).update({
+  status:'approved',reviewedAt:firebase.firestore.FieldValue.serverTimestamp(),
+  reviewedBy:dashSession.name||'Admin',reviewedByRole:'Admin',reviewReason:''
+ });
+ await portalNotify({
+  recipientIds:[String(x.staffId)],recipientRoles:[],title:'Leave Approved',
+  detail:`${leaveLabel(x)} for ${dateOf(x,'leave')} was approved by Admin.`,
+  url:'leaveapp.html',type:'leave-approved',sourceId:id,actorId:dashSession.id||'',actorName:dashSession.name||'Admin'
+ });
+ await reloadDashboardData();
+};
+window.dashboardApproveDuty=async function(id){
+ if(normalizeRole(dashSession?.role)!=='admin')return alert('Only Admin can approve duty changes.');
+ const x=dashDutyChanges.find(r=>r.id===id);if(!x||statusOf(x)!=='pending')return;
+ await db.collection('dutyChanges').doc(id).update({
+  status:'approved',reviewedAt:firebase.firestore.FieldValue.serverTimestamp(),
+  reviewedBy:dashSession.name||'Admin',reviewedByRole:'Admin'
+ });
+ await portalNotify({
+  recipientIds:[x.requesterId,x.acceptStaffId].filter(Boolean).map(String),recipientRoles:[],
+  title:'Duty Change Approved',
+  detail:`${x.requesterName||'Staff'} ↔ ${x.acceptStaffName||'Staff'} approved for ${dateOf(x,'duty')}.`,
+  url:'dutychange.html',type:'duty-change',sourceId:id,actorId:dashSession.id||'',actorName:dashSession.name||'Admin'
+ });
+ await reloadDashboardData();
+};
+window.dashboardCancelDuty=async function(id){
+ const x=dashDutyChanges.find(r=>r.id===id);
+ if(!x||String(x.requesterId)!==String(dashSession?.id))return;
+ if(statusOf(x)!=='pending')return alert('Only pending duty changes can be cancelled.');
+ if(!confirm('Cancel this pending duty change?'))return;
+ await db.collection('dutyChanges').doc(id).update({
+  status:'cancelled',reviewedAt:firebase.firestore.FieldValue.serverTimestamp(),
+  reviewedBy:dashSession.name||'Staff'
+ });
+ await portalNotify({
+  recipientIds:[x.requesterId,x.acceptStaffId].filter(Boolean).map(String),
+  recipientRoles:['admin','supervisor'],title:'Duty Change Cancelled',
+  detail:`${x.requesterName||'Staff'} cancelled the duty change for ${dateOf(x,'duty')}.`,
+  url:'dutychange.html',type:'duty-change',sourceId:id,actorId:dashSession.id||'',actorName:dashSession.name||''
+ });
+ await reloadDashboardData();
+};
+window.dashboardCancelLeave=async function(id){
+ const x=dashLeaves.find(r=>r.id===id);
+ if(!x||String(x.staffId)!==String(dashSession?.id))return;
+ if(statusOf(x)!=='pending')return alert('Only pending leave can be cancelled.');
+ if(!confirm('Cancel this pending leave request? Your leave balance will be restored.'))return;
+ // Restore the balance that was deducted when the request was submitted.
+ const bs=await db.collection('staffBalances').where('staffId','==',String(x.staffId)).get();
+ if(!bs.empty){
+  const ref=bs.docs[0].ref,b=bs.docs[0].data(),u={updatedAt:new Date().toISOString()};
+  if(String(x.type).toLowerCase()==='sick')u.sickLeave=(Number(b.sickLeave)||0)+1;
+  if(String(x.type).toLowerCase()==='frl')u.frlBalance=(Number(b.frlBalance)||0)+1;
+  await ref.update(u);
+ }
+ await db.collection('leaveRequests').doc(id).update({
+  status:'cancelled',reviewedAt:firebase.firestore.FieldValue.serverTimestamp(),
+  reviewedBy:dashSession.name||'Staff',reviewReason:'Cancelled by staff'
+ });
+ await portalNotify({
+  recipientIds:[],recipientRoles:['admin','supervisor'],title:'Leave Cancelled',
+  detail:`${x.staffName||'Staff'} cancelled ${leaveLabel(x)} for ${dateOf(x,'leave')}.`,
+  url:'leaveapp.html',type:'leave-cancelled',sourceId:id,actorId:dashSession.id||'',actorName:dashSession.name||''
+ });
+ await reloadDashboardData();
 };
 
-
-/* =========================================================
-   GENERATE ANNOUNCEMENT
-========================================================= */
-
-function generateAnnouncement(){
-
-    const lang =
-        languageEl.value;
-
-    const type =
-        typeEl.value;
-
-    const flight =
-        flightEl.value.trim() ||
-        "[FLIGHT]";
-
-    const destination =
-        destinationEl.value.trim() ||
-        "[DESTINATION]";
-
-    const gate =
-        gateEl.value.trim() ||
-        "[GATE]";
-
-    const group =
-        groupEl.value.trim();
-
-
-    let text = "";
-
-
-    /* =====================================================
-       ENGLISH
-    ===================================================== */
-
-    if(lang === "en"){
-
-        if(type === "general"){
-
-            text =
-                "Ladies and gentlemen, may I have your attention please. " +
-
-                `We are pleased to announce that boarding is now open for flight ${flight} to ${destination}. ` +
-
-                (
-                    group
-                    ? `Passengers in ${group} are kindly invited to proceed to Gate ${gate}. `
-                    : `Passengers are kindly invited to proceed to Gate ${gate}. `
-                ) +
-
-                "Please have your boarding passes and travel documents ready for inspection. " +
-
-                "Thank you for your kind cooperation, and we wish you a pleasant journey.";
-
-        }
-
-
-        else if(type === "priority"){
-
-            text =
-                "Ladies and gentlemen, may I have your attention please. " +
-
-                `We are now inviting priority passengers travelling on flight ${flight} to ${destination} to proceed to Gate ${gate} for boarding. ` +
-
-                "Please have your boarding passes and travel documents ready for inspection. " +
-
-                "Thank you for your cooperation.";
-
-        }
-
-
-        else if(type === "special"){
-
-            text =
-                "Ladies and gentlemen, may I have your attention please. " +
-
-                `Passengers travelling on flight ${flight} to ${destination} who require special assistance, ` +
-
-                "passengers travelling with young children, and passengers who may require additional time to board " +
-
-                `are kindly invited to proceed to Gate ${gate}. ` +
-
-                "Our staff will be pleased to assist you. Thank you.";
-
-        }
-
-
-        else if(type === "final"){
-
-            text =
-                "Attention please. " +
-
-                `This is the final boarding call for all remaining passengers travelling on flight ${flight} to ${destination}. ` +
-
-                `Please proceed immediately to Gate ${gate}, as boarding is about to close. ` +
-
-                "Thank you.";
-
-        }
-
-    }
-
-
-    /* =====================================================
-       ARABIC — SAUDI ARABIA
-    ===================================================== */
-
-    else if(lang === "ar"){
-
-        if(type === "general"){
-
-            text =
-                "السيدات والسادة، نرجو منكم التكرم بالانتباه. " +
-
-                `يسرنا أن نعلن عن بدء صعود الركاب للرحلة رقم ${flight} المتجهة إلى ${destination}. ` +
-
-                (
-                    group
-                    ? `يرجى من ركاب ${group} التوجه إلى بوابة الصعود رقم ${gate}. `
-                    : `يرجى من جميع الركاب التوجه إلى بوابة الصعود رقم ${gate}. `
-                ) +
-
-                "نرجو تجهيز بطاقات الصعود ووثائق السفر لإتمام إجراءات الصعود. " +
-
-                "نشكر لكم حسن تعاونكم، ونتمنى لكم رحلة سعيدة.";
-
-        }
-
-
-        else if(type === "priority"){
-
-            text =
-                "السيدات والسادة، نرجو منكم التكرم بالانتباه. " +
-
-                `ندعو الآن ركاب الأولوية المسافرين على الرحلة رقم ${flight} المتجهة إلى ${destination} ` +
-
-                `للتوجه إلى بوابة الصعود رقم ${gate}. ` +
-
-                "يرجى تجهيز بطاقات الصعود ووثائق السفر. " +
-
-                "شكراً لحسن تعاونكم.";
-
-        }
-
-
-        else if(type === "special"){
-
-            text =
-                "السيدات والسادة، نرجو منكم التكرم بالانتباه. " +
-
-                `يرجى من المسافرين على الرحلة رقم ${flight} المتجهة إلى ${destination} ` +
-
-                "والذين يحتاجون إلى مساعدة خاصة، وكذلك العائلات المسافرة مع الأطفال الصغار، " +
-
-                `التوجه إلى بوابة الصعود رقم ${gate}. ` +
-
-                "يسر موظفينا تقديم المساعدة لكم. شكراً لتعاونكم.";
-
-        }
-
-
-        else if(type === "final"){
-
-            text =
-                "نداء أخير. " +
-
-                `هذا هو النداء الأخير لجميع الركاب المتبقين على الرحلة رقم ${flight} المتجهة إلى ${destination}. ` +
-
-                `يرجى التوجه فوراً إلى بوابة الصعود رقم ${gate}، حيث سيتم إغلاق البوابة قريباً. ` +
-
-                "شكراً لكم.";
-
-        }
-
-    }
-
-
-    /* =====================================================
-       HONG KONG CANTONESE — TRADITIONAL CHINESE
-    ===================================================== */
-
-    else if(lang === "zh-HK"){
-
-        if(type === "general"){
-
-            text =
-                "各位旅客請注意。 " +
-
-                `前往${destination}嘅${flight}航班而家開始登機。 ` +
-
-                (
-                    group
-                    ? `請${group}嘅旅客前往${gate}號登機閘口。 `
-                    : `請各位旅客前往${gate}號登機閘口。 `
-                ) +
-
-                "請準備好登機證同旅遊證件，以便辦理登機手續。 " +
-
-                "多謝合作，祝各位旅途愉快。";
-
-        }
-
-
-        else if(type === "priority"){
-
-            text =
-                "各位旅客請注意。 " +
-
-                `乘搭${flight}航班前往${destination}嘅優先登機旅客， ` +
-
-                `而家請前往${gate}號登機閘口登機。 ` +
-
-                "請準備好登機證同旅遊證件。多謝合作。";
-
-        }
-
-
-        else if(type === "special"){
-
-            text =
-                "各位旅客請注意。 " +
-
-                `乘搭${flight}航班前往${destination}而需要特別協助嘅旅客， ` +
-
-                "以及攜同幼童同行或者需要較多登機時間嘅旅客， " +
-
-                `請前往${gate}號登機閘口。 ` +
-
-                "我哋嘅職員會為你提供協助。多謝合作。";
-
-        }
-
-
-        else if(type === "final"){
-
-            text =
-                "各位旅客請注意，最後登機廣播。 " +
-
-                `乘搭${flight}航班前往${destination}而尚未登機嘅旅客， ` +
-
-                `請立即前往${gate}號登機閘口。 ` +
-
-                "登機閘口即將關閉。多謝合作。";
-
-        }
-
-    }
-
-
-    /* =====================================================
-       RUSSIAN
-    ===================================================== */
-
-    else if(lang === "ru"){
-
-        if(type === "general"){
-
-            text =
-                "Уважаемые дамы и господа, просим вашего внимания. " +
-
-                `Объявляется посадка на рейс ${flight}, следующий в ${destination}. ` +
-
-                (
-                    group
-                    ? `Пассажиров группы ${group} просим пройти к выходу ${gate}. `
-                    : `Пассажиров просим пройти к выходу ${gate}. `
-                ) +
-
-                "Пожалуйста, подготовьте посадочные талоны и проездные документы. " +
-
-                "Благодарим вас за сотрудничество и желаем приятного полёта.";
-
-        }
-
-
-        else if(type === "priority"){
-
-            text =
-                "Уважаемые пассажиры, просим вашего внимания. " +
-
-                `Приглашаются пассажиры приоритетной посадки рейса ${flight}, следующего в ${destination}. ` +
-
-                `Просим пройти к выходу ${gate}. ` +
-
-                "Пожалуйста, подготовьте посадочные талоны и документы. Спасибо.";
-
-        }
-
-
-        else if(type === "special"){
-
-            text =
-                "Уважаемые пассажиры, просим вашего внимания. " +
-
-                `Пассажиров рейса ${flight}, следующего в ${destination}, которым требуется дополнительная помощь, ` +
-
-                "а также пассажиров с маленькими детьми, " +
-
-                `просим пройти к выходу ${gate}. ` +
-
-                "Наши сотрудники будут рады вам помочь. Спасибо.";
-
-        }
-
-
-        else if(type === "final"){
-
-            text =
-                "Внимание, пожалуйста. " +
-
-                `Это последний вызов на посадку для пассажиров рейса ${flight}, следующего в ${destination}. ` +
-
-                `Просим оставшихся пассажиров немедленно пройти к выходу ${gate}. ` +
-
-                "Посадка завершается. Спасибо.";
-
-        }
-
-    }
-
-
-    /* =====================================================
-       ITALIAN
-    ===================================================== */
-
-    else if(lang === "it"){
-
-        if(type === "general"){
-
-            text =
-                "Signore e signori, vi preghiamo di prestare attenzione. " +
-
-                `È iniziato l'imbarco del volo ${flight} diretto a ${destination}. ` +
-
-                (
-                    group
-                    ? `Invitiamo gentilmente i passeggeri del ${group} a recarsi al gate ${gate}. `
-                    : `Invitiamo gentilmente i passeggeri a recarsi al gate ${gate}. `
-                ) +
-
-                "Vi preghiamo di tenere pronti la carta d'imbarco e i documenti di viaggio. " +
-
-                "Grazie per la collaborazione e vi auguriamo un piacevole viaggio.";
-
-        }
-
-
-        else if(type === "priority"){
-
-            text =
-                "Signore e signori, vi preghiamo di prestare attenzione. " +
-
-                `Invitiamo i passeggeri con imbarco prioritario del volo ${flight} diretto a ${destination} ` +
-
-                `a recarsi al gate ${gate}. ` +
-
-                "Vi preghiamo di tenere pronti la carta d'imbarco e i documenti di viaggio. Grazie.";
-
-        }
-
-
-        else if(type === "special"){
-
-            text =
-                "Signore e signori, vi preghiamo di prestare attenzione. " +
-
-                `I passeggeri del volo ${flight} diretto a ${destination} che necessitano di assistenza speciale, ` +
-
-                "le famiglie con bambini piccoli e i passeggeri che necessitano di più tempo per l'imbarco " +
-
-                `sono gentilmente invitati a recarsi al gate ${gate}. ` +
-
-                "Il nostro personale sarà lieto di assistervi. Grazie.";
-
-        }
-
-
-        else if(type === "final"){
-
-            text =
-                "Attenzione, prego. " +
-
-                `Questo è l'ultimo invito all'imbarco per i passeggeri del volo ${flight} diretto a ${destination}. ` +
-
-                `Invitiamo tutti i passeggeri ancora mancanti a recarsi immediatamente al gate ${gate}. ` +
-
-                "L'imbarco sta per terminare. Grazie.";
-
-        }
-
-    }
-
-
-    /* =====================================================
-       JAPANESE
-    ===================================================== */
-
-    else if(lang === "ja"){
-
-        if(type === "general"){
-
-            text =
-                "お客様にご案内申し上げます。 " +
-
-                `${destination}行き、${flight}便の搭乗を開始いたします。 ` +
-
-                (
-                    group
-                    ? `${group}のお客様は、${gate}番搭乗口までお越しください。 `
-                    : `ご搭乗のお客様は、${gate}番搭乗口までお越しください。 `
-                ) +
-
-                "搭乗券と渡航書類をご用意のうえ、お進みください。 " +
-
-                "皆様のご協力に感謝申し上げます。どうぞ良いご旅行をお楽しみください。";
-
-        }
-
-
-        else if(type === "priority"){
-
-            text =
-                "お客様にご案内申し上げます。 " +
-
-                `${destination}行き、${flight}便の優先搭乗をご利用のお客様は、 ` +
-
-                `${gate}番搭乗口までお越しください。 ` +
-
-                "搭乗券と渡航書類をご用意ください。ご協力ありがとうございます。";
-
-        }
-
-
-        else if(type === "special"){
-
-            text =
-                "お客様にご案内申し上げます。 " +
-
-                `${destination}行き、${flight}便をご利用のお客様で、 ` +
-
-                "お手伝いが必要なお客様、小さなお子様をお連れのお客様、 " +
-
-                `および搭乗にお時間が必要なお客様は、${gate}番搭乗口までお越しください。 ` +
-
-                "係員がお手伝いいたします。ありがとうございます。";
-
-        }
-
-
-        else if(type === "final"){
-
-            text =
-                "お客様に最終搭乗のご案内を申し上げます。 " +
-
-                `${destination}行き、${flight}便にご搭乗で、まだ搭乗されていないお客様は、 ` +
-
-                `${gate}番搭乗口まで至急お越しください。 ` +
-
-                "まもなく搭乗手続きを終了いたします。ありがとうございます。";
-
-        }
-
-    }
-
-
-    announcementEl.value =
-        text;
-
-
-    updateLanguageUI();
-
+async function showDashboard(s){
+ dashSession=s;
+ $('loginView').style.display='none';$('dashboard').style.display='block';
+ $('dashGreeting').textContent=`${greeting()}, ${s.name.split(' ')[0]}`;
+ $('dashRole').textContent=s.role||'Staff';
+ $('dashUserName').textContent=s.name||'Staff';
+ $('dashUserAvatar').textContent=String(s.name||'S').trim().charAt(0).toUpperCase()||'S';
+ $('dashDate').textContent=new Intl.DateTimeFormat('en-GB',{timeZone:'Indian/Maldives',weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(new Date());
+ $('dashSick').textContent=s.sickLeave??'—';$('dashFrl').textContent=s.frlBalance??'—';
+ const role=normalizeRole(s.role);
+ $('staffDashboardArea').style.display=role==='staff'?'block':'none';
+ $('supervisorDashboardArea').style.display=role==='supervisor'?'block':'none';
+ $('adminDashboardArea').style.display=role==='admin'?'block':'none';
+ if(role!=='staff'){
+  $('stat3Label').textContent='Pending Approvals';
+  $('stat3Sub').textContent='Leave + duty';
+  $('stat4Label').textContent="Today's Staff Changes";
+  $('stat4Sub').textContent='Leave + duty';
+ }
+ try{
+  db=firebase.firestore();
+  const bal=await db.collection('staffBalances').where('staffId','==',String(s.id)).get();
+  if(!bal.empty){const b=bal.docs[0].data();$('dashSick').textContent=b.sickLeave??$('dashSick').textContent;$('dashFrl').textContent=b.frlBalance??$('dashFrl').textContent}
+  await reloadDashboardData();
+  $('adminLeaveFilter')?.addEventListener('change',renderAdminHistory);
+  $('adminDutyFilter')?.addEventListener('change',renderAdminHistory);
+ }catch(e){console.warn('Dashboard:',e)}
 }
 
-
-/* =========================================================
-   LANGUAGE DISPLAY
-========================================================= */
-
-function updateLanguageUI(){
-
-    const config =
-        languageSettings[
-            languageEl.value
-        ];
-
-
-    document.getElementById(
-        "languageBadge"
-    ).textContent =
-        config.name.toUpperCase();
-
-
-    if(config.rtl){
-
-        announcementEl.dir =
-            "rtl";
-
-        announcementEl.style.textAlign =
-            "right";
-
-    }
-
-    else{
-
-        announcementEl.dir =
-            "ltr";
-
-        announcementEl.style.textAlign =
-            "left";
-
-    }
-
-
-    selectPreferredVoice();
-
+function staffIdentity(name, rcno, fallbackId){
+ const n=esc(name||'Staff');
+ const r=esc(rcno||fallbackId||'');
+ return r ? `${n} <span class="dash-rcno">RC: ${r}</span>` : n;
 }
 
-
-/* =========================================================
-   LOAD VOICES
-========================================================= */
-
-function loadVoices(){
-
-    voices = synth.getVoices();
-
-    if(voices.length){
-        voiceLoadAttempts = 0;
-        selectPreferredVoice();
-        return;
-    }
-
-    voiceLoadAttempts++;
-
-    document.getElementById("voiceStatus").textContent =
-        "Loading browser/Windows voices...";
-
-    if(voiceLoadAttempts < 12){
-        setTimeout(loadVoices, 400);
-    }
-
-}
-
-
-/* =========================================================
-   SELECT PREFERRED VOICE
-========================================================= */
-
-function selectPreferredVoice(){
-
-    const config =
-        languageSettings[
-            languageEl.value
-        ];
-
-
-    if(!config){
-        return;
-    }
-
-
-    voiceEl.innerHTML = "";
-
-
-    /*
-    Only show voices matching
-    the requested locale/language.
-    */
-
-    const locale = config.locale.toLowerCase();
-    const baseLanguage = locale.split("-")[0];
-
-    let matching = voices.filter(voice=>{
-        const lang = String(voice.lang || "").toLowerCase();
-        return lang === locale;
-    });
-
-    if(!matching.length){
-        matching = voices.filter(voice=>{
-            const lang = String(voice.lang || "").toLowerCase();
-            return lang === baseLanguage ||
-                   lang.startsWith(baseLanguage + "-");
-        });
-    }
-
-
-    /*
-    For Cantonese, prioritize zh-HK.
-    */
-
-    if(
-        languageEl.value === "zh-HK"
-    ){
-
-        const hongKong =
-            matching.filter(v=>
-
-                String(v.lang)
-                    .toLowerCase()
-                    .includes("zh-hk")
-
-            );
-
-
-        if(hongKong.length){
-
-            matching =
-                hongKong;
-
-        }
-
-    }
-
-
-    if(!matching.length){
-
-        const option =
-            document.createElement(
-                "option"
-            );
-
-        option.value = "";
-
-        option.textContent =
-            "Preferred voice not available";
-
-        voiceEl.appendChild(
-            option
-        );
-
-
-        document.getElementById(
-            "voiceStatus"
-        ).textContent =
-
-            "⚠ " +
-            config.name +
-            " voice is not currently exposed by this browser/Windows installation. " +
-            "The system will not substitute an English voice.";
-
-        return;
-
-    }
-
-
-    /*
-    Score voices according to
-    our preference list.
-    */
-
-    matching.sort(
-        (a,b)=>
-
-            voiceScore(
-                b,
-                config
-            )
-
-            -
-
-            voiceScore(
-                a,
-                config
-            )
-    );
-
-
-    matching.forEach(
-        (voice,index)=>{
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-            option.value =
-                voices.indexOf(
-                    voice
-                );
-
-
-            option.textContent =
-                (
-                    index === 0
-                    ? "★ "
-                    : ""
-                ) +
-
-                voice.name +
-                " — " +
-                voice.lang;
-
-
-            voiceEl.appendChild(
-                option
-            );
-
-        }
-    );
-
-
-    voiceEl.selectedIndex = 0;
-
-    updateVoiceStatus();
-
-}
-
-
-/* =========================================================
-   VOICE SCORING
-========================================================= */
-
-function voiceScore(
-    voice,
-    config
-){
-
-    let score = 0;
-
-
-    const name =
-        String(
-            voice.name || ""
-        ).toLowerCase();
-
-
-    const lang =
-        String(
-            voice.lang || ""
-        ).toLowerCase();
-
-
-    if(
-        lang ===
-        config.locale.toLowerCase()
-    ){
-
-        score += 100;
-
-    }
-
-
-    config.voicePreference.forEach(
-        (preference,index)=>{
-
-            if(
-                name.includes(
-                    preference.toLowerCase()
-                )
-            ){
-
-                score +=
-                    200 -
-                    (index * 10);
-
-            }
-
-        }
-    );
-
-
-    /*
-    English Sonia gets
-    a very strong preference.
-    */
-
-    if(
-        languageEl.value === "en" &&
-        name.includes("sonia")
-    ){
-
-        score += 1000;
-
-    }
-
-
-    /*
-    Cantonese Hong Kong
-    */
-
-    if(
-        languageEl.value === "zh-HK" &&
-        lang.includes("zh-hk")
-    ){
-
-        score += 1000;
-
-    }
-
-
-    /*
-    Saudi Arabic
-    */
-
-    if(
-        languageEl.value === "ar" &&
-        lang.includes("ar-sa")
-    ){
-
-        score += 1000;
-
-    }
-
-
-    return score;
-
-}
-
-
-/* =========================================================
-   VOICE STATUS
-========================================================= */
-
-function updateVoiceStatus(){
-
-    if(
-        voiceEl.value === ""
-    ){
-        return;
-    }
-
-
-    const voice =
-        voices[
-            Number(
-                voiceEl.value
-            )
-        ];
-
-
-    if(!voice){
-        return;
-    }
-
-
-    document.getElementById(
-        "voiceStatus"
-    ).textContent =
-
-        "✓ Selected: " +
-        voice.name +
-        " • " +
-        voice.lang +
-        " • " +
-        (
-            voice.localService
-            ? "Local voice"
-            : "Online voice"
-        );
-
-}
-
-
-/* =========================================================
-   PLAY
-========================================================= */
-
-function playAnnouncement(){
-
-    const text =
-        announcementEl.value.trim();
-
-
-    if(!text){
-
-        setStatus(
-            "error",
-            "NO ANNOUNCEMENT",
-            "Please enter the flight information."
-        );
-
-        return;
-
-    }
-
-
-    if(
-        voiceEl.value === ""
-    ){
-
-        setStatus(
-            "error",
-            "VOICE NOT AVAILABLE",
-            "The required voice is not available on this computer."
-        );
-
-        return;
-
-    }
-
-
-    synth.cancel();
-
-
-    paused = false;
-
-
-    currentSpeech =
-        new SpeechSynthesisUtterance(
-            text
-        );
-
-
-    const selectedVoice =
-        voices[
-            Number(
-                voiceEl.value
-            )
-        ];
-
-
-    if(selectedVoice){
-
-        const requiredLocale =
-            languageSettings[languageEl.value].locale.toLowerCase();
-
-        const requiredBase =
-            requiredLocale.split("-")[0];
-
-        const selectedLang =
-            String(selectedVoice.lang || "").toLowerCase();
-
-        if(
-            selectedLang !== requiredLocale &&
-            !selectedLang.startsWith(requiredBase + "-")
-        ){
-            setStatus(
-                "error",
-                "WRONG VOICE",
-                "The selected voice does not match " +
-                languageSettings[languageEl.value].name + "."
-            );
-            return;
-        }
-
-        currentSpeech.voice = selectedVoice;
-        currentSpeech.lang = selectedVoice.lang;
-
-    }
-
-    else{
-
-        setStatus(
-            "error",
-            "VOICE NOT AVAILABLE",
-            "No matching " +
-            languageSettings[languageEl.value].name +
-            " voice is available."
-        );
-        return;
-
-    }
-
-
-    currentSpeech.rate =
-        Number(
-            document.getElementById(
-                "rate"
-            ).value
-        );
-
-
-    currentSpeech.pitch = 1;
-
-    currentSpeech.volume = 1;
-
-
-    currentSpeech.onstart =
-        ()=>{
-
-            setStatus(
-                "playing",
-                "ON AIR",
-                languageSettings[
-                    languageEl.value
-                ].name +
-                " announcement is playing."
-            );
-
-        };
-
-
-    currentSpeech.onend =
-        ()=>{
-
-            paused = false;
-
-
-            document.getElementById(
-                "pause"
-            ).textContent =
-                "⏸ PAUSE";
-
-
-            setStatus(
-                "",
-                "FINISHED",
-                "Announcement completed."
-            );
-
-        };
-
-
-    currentSpeech.onerror =
-        event=>{
-
-            if(
-                event.error === "canceled"
-            ){
-                return;
-            }
-
-
-            setStatus(
-                "error",
-                "PLAYBACK ERROR",
-                event.error
-            );
-
-        };
-
-
-    synth.speak(
-        currentSpeech
-    );
-
-}
-
-
-/* =========================================================
-   PAUSE / RESUME
-========================================================= */
-
-function pauseResume(){
-
-    if(!synth.speaking){
-        return;
-    }
-
-
-    if(!paused){
-
-        synth.pause();
-
-        paused = true;
-
-
-        document.getElementById(
-            "pause"
-        ).textContent =
-                "▶ RESUME";
-
-
-        setStatus(
-            "paused",
-            "PAUSED",
-            "Announcement paused."
-        );
-
-    }
-
-    else{
-
-        synth.resume();
-
-        paused = false;
-
-
-        document.getElementById(
-            "pause"
-        ).textContent =
-                "⏸ PAUSE";
-
-
-        setStatus(
-            "playing",
-            "ON AIR",
-            "Announcement resumed."
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   STOP
-========================================================= */
-
-function stopAnnouncement(){
-
-    synth.cancel();
-
-    paused = false;
-
-
-    document.getElementById(
-        "pause"
-    ).textContent =
-        "⏸ PAUSE";
-
-
-    setStatus(
-        "",
-        "STOPPED",
-        "Announcement stopped."
-    );
-
-}
-
-
-/* =========================================================
-   STATUS
-========================================================= */
-
-function setStatus(
-    type,
-    title,
-    message
-){
-
-    const status =
-        document.getElementById(
-            "status"
-        );
-
-
-    status.className =
-        "status" +
-        (
-            type
-            ? " " + type
-            : ""
-        );
-
-
-    document.getElementById(
-        "statusTitle"
-    ).textContent =
-        title;
-
-
-    document.getElementById(
-        "statusText"
-    ).textContent =
-        message;
-
-}
-
-
-/* =========================================================
-   EVENTS
-========================================================= */
-
-typeEl.addEventListener(
-    "change",
-    generateAnnouncement
-);
-
-
-languageEl.addEventListener(
-    "change",
-    ()=>{
-
-        synth.cancel();
-
-        generateAnnouncement();
-
-    }
-);
-
-
-[
-    flightEl,
-    destinationEl,
-    gateEl,
-    groupEl
-
-].forEach(
-    element=>{
-
-        element.addEventListener(
-            "input",
-            generateAnnouncement
-        );
-
-    }
-);
-
-
-voiceEl.addEventListener(
-    "change",
-    updateVoiceStatus
-);
-
-document.getElementById("refreshVoices").addEventListener(
-    "click",
-    ()=>{
-        voiceLoadAttempts = 0;
-        loadVoices();
-    }
-);
-
-
-document.getElementById(
-    "play"
-).addEventListener(
-    "click",
-    playAnnouncement
-);
-
-
-document.getElementById(
-    "pause"
-).addEventListener(
-    "click",
-    pauseResume
-);
-
-
-document.getElementById(
-    "stop"
-).addEventListener(
-    "click",
-    stopAnnouncement
-);
-
-
-document.getElementById(
-    "rate"
-).addEventListener(
-    "input",
-    function(){
-
-        document.getElementById(
-            "rateText"
-        ).textContent =
-            Number(
-                this.value
-            ).toFixed(2) +
-            " ×";
-
-    }
-);
-
-
-/* =========================================================
-   CLOCK
-========================================================= */
-
-function updateClock(){
-
-    document.getElementById(
-        "clock"
-    ).textContent =
-        new Date()
-            .toLocaleString();
-
-}
-
-
-setInterval(
-    updateClock,
-    1000
-);
-
-updateClock();
-
-
-/* =========================================================
-   INITIALIZE VOICES
-========================================================= */
-
-loadVoices();
-
-
-if(
-    "onvoiceschanged"
-    in speechSynthesis
-){
-
-    speechSynthesis.onvoiceschanged =
-        loadVoices;
-
-}
-
-
-setTimeout(
-    loadVoices,
-    300
-);
-
-setTimeout(
-    loadVoices,
-    1000
-);
-
-setTimeout(
-    loadVoices,
-    2500
-);
-
-
-/* =========================================================
-   INITIAL ANNOUNCEMENT
-========================================================= */
-
-generateAnnouncement();
-
+function time(v){if(!v)return 0;if(v.toMillis)return v.toMillis();if(v.seconds)return v.seconds*1000;return Date.parse(v)||0}
+
+document.getElementById('dashLogout')?.addEventListener('click',()=>{
+ localStorage.removeItem(SESSION_KEY);
+ localStorage.removeItem(REMEMBER_LOGIN_KEY);
+ localStorage.removeItem(ACTIVE_SESSION_KEY);
+ location.href='index.html';
+});
+
+document.addEventListener('click',e=>{if(!e.target.closest('.search-box'))$('searchResults').style.display='none'});document.addEventListener('DOMContentLoaded',init);
 </script>
+<script src="script/email-config.js"></script>
+<script src="script/email-helper.js"></script>
 
+<script src="script/notification-service.js"></script>
+<script src="script/inbox.js"></script>
+<script src="script/push-config.js"></script>
+<script src="script/push-client.js"></script>
+<script src="script/build-version.js"></script>
+<script src="script/app-update.js"></script>
+<script src="script/portal-navbar.js"></script>
 </body>
 </html>
