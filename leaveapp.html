@@ -950,8 +950,8 @@ body.leave-page{
     </script>
     <script src="script/email-config.js?v=34"></script>
     <script src="script/email-helper.js?v=34"></script>
-    <script src="script/user.js"></script>
-    <script type="module" src="script/leave-app.js?v=35"></script>
+    <script src="script/user.js?v=1"></script>
+    <script type="module" src="script/leave-app.js?v=36"></script>
     <script src="script/portal-navbar.js?v=29"></script>
     <script src="script/notification-service.js?v=29"></script>
     <script src="script/inbox.js?v=29"></script>
@@ -962,30 +962,25 @@ body.leave-page{
  const $=id=>document.getElementById(id);
  function session(){
   try{
-   const keys=['koveliActiveSession','staffPortalSession','koveliUserSession','userSession'];
-   for(const key of keys){
-    const raw=localStorage.getItem(key)||sessionStorage.getItem(key);
-    if(!raw)continue;
-    const s=JSON.parse(raw);
-    if(s && (s.id||s.username||s.name)){
-     return {
-      ...s,
-      id:s.id||s.uid||s.username,
-      rcno:s.rcno||s.staffId||s.id||s.username,
-      name:s.name||s.fullName||s.username||'Staff',
-      role:s.role||'Staff'
-     };
-    }
-   }
-  }catch(e){console.warn('Session read error:',e)}
-  return null;
+   const raw =
+    sessionStorage.getItem('koveliUser') ||
+    localStorage.getItem('koveliUser') ||
+    sessionStorage.getItem('koveliActiveSession') ||
+    localStorage.getItem('koveliActiveSession') ||
+    localStorage.getItem('staffPortalSession');
+
+   return raw ? JSON.parse(raw) : null;
+  }catch(e){
+   console.warn('Leave header session error:',e);
+   return null;
+  }
  }
  function render(){
   const s=session();
   const box=$('leaveHeaderUser');
   if(!box)return;
-  box.style.display=s&&s.id?'flex':'none';
-  if(!s||!s.id)return;
+  box.style.display=s&&(s.id||s.username||s.name)?'flex':'none';
+  if(!s||!(s.id||s.username||s.name))return;
   const name=String(s.name||'Staff');
   $('leaveHeaderName').textContent=name;
   $('leaveHeaderRole').textContent=s.role||'Staff';
@@ -994,6 +989,8 @@ body.leave-page{
  function init(){
   render();
   $('leaveHeaderLogout')?.addEventListener('click',function(){
+   sessionStorage.removeItem('koveliUser');
+   localStorage.removeItem('koveliUser');
    localStorage.removeItem('staffPortalSession');
    localStorage.removeItem('koveliRememberLogin');
    localStorage.removeItem('koveliActiveSession');
