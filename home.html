@@ -3,20 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Koveli Lounge | Home</title>
-    <link rel="stylesheet" href="styles/styles.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            background:
+                radial-gradient(
+                    circle at top,
+                    #18362f 0%,
+                    #101c19 35%,
+                    #080d0c 100%
+                );
+            color: #ffffff;
+        }
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 40px;
+
+            background: rgba(8, 15, 13, 0.85);
+            border-bottom: 1px solid rgba(210, 171, 95, 0.25);
+        }
+
+        .logo {
+            height: 65px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .header-title {
+            font-size: 14px;
+            color: #b8c2bd;
+            letter-spacing: 1px;
+        }
+
+        /* =========================
+           MAIN
+        ========================= */
+
+        .main {
+            min-height: calc(100vh - 90px);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 30px;
+        }
+
+        .welcome-card {
+            width: 100%;
+            max-width: 600px;
+
+            text-align: center;
+
+            padding: 55px 40px;
+
+            background: rgba(18, 31, 27, 0.92);
+
+            border: 1px solid rgba(210, 171, 95, 0.25);
+            border-radius: 24px;
+
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.35);
+        }
+
+        .small-title {
+            color: #d5ad62;
+
+            font-size: 12px;
+            font-weight: 700;
+
+            letter-spacing: 3px;
+
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-family: Georgia, "Times New Roman", serif;
+
+            font-size: 38px;
+            font-weight: normal;
+
+            margin-bottom: 12px;
+        }
+
+        .description {
+            color: #aab5b0;
+
+            font-size: 15px;
+            line-height: 1.6;
+
+            margin-bottom: 40px;
+        }
+
+        /* =========================
+           APP BUTTON
+        ========================= */
+
+        .app-button {
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+
+            gap: 18px;
+
+            padding: 20px 22px;
+
+            background: #d4ad63;
+
+            color: #111814;
+
+            border: none;
+            border-radius: 14px;
+
+            cursor: pointer;
+
+            text-align: left;
+
+            transition:
+                transform 0.2s ease,
+                background 0.2s ease;
+        }
+
+        .app-button:hover {
+            background: #e1bd76;
+            transform: translateY(-2px);
+        }
+
+        .app-button:active {
+            transform: translateY(0);
+        }
+
+        .app-icon {
+            width: 52px;
+            height: 52px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            background: rgba(0, 0, 0, 0.12);
+
+            border-radius: 12px;
+
+            font-size: 27px;
+        }
+
+        .app-info {
+            flex: 1;
+        }
+
+        .app-name {
+            display: block;
+
+            font-size: 18px;
+            font-weight: 700;
+
+            margin-bottom: 5px;
+        }
+
+        .app-description {
+            display: block;
+
+            font-size: 13px;
+
+            color: rgba(0, 0, 0, 0.65);
+        }
+
+        .arrow {
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 600px) {
+
+            .header {
+                height: 75px;
+                padding: 0 20px;
+            }
+
+            .logo {
+                height: 52px;
+            }
+
+            .header-title {
+                display: none;
+            }
+
+            .main {
+                min-height: calc(100vh - 75px);
+                padding: 20px;
+            }
+
+            .welcome-card {
+                padding: 40px 22px;
+            }
+
+            h1 {
+                font-size: 30px;
+            }
+
+            .app-button {
+                padding: 17px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-    <main class="shell">
-        <img class="logo" src="assets/images/koveli-logo.png" alt="Koveli Lounge">
-        <section class="card">
-            <h1>KOVELI Lounge System</h1>
-            <p class="sub">Authorized access</p>
-            <div id="who" class="userbox"></div>
-            <button id="logout" type="button">Logout</button>
-        </section>
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="header">
+
+        <img
+            src="assets/images/koveli-logo.png"
+            alt="Koveli Lounge"
+            class="logo"
+        >
+
+        <div class="header-title">
+            STAFF PORTAL
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         MAIN
+    ========================== -->
+
+    <main class="main">
+
+        <div class="welcome-card">
+
+            <div class="small-title">
+                KOVELI LOUNGE
+            </div>
+
+            <h1>
+                Staff Portal
+            </h1>
+
+            <p class="description">
+                Select an application to continue.
+            </p>
+
+
+            <!-- LEAVE APPLICATION -->
+
+            <button
+                class="app-button"
+                onclick="openLeaveApp()"
+            >
+
+                <div class="app-icon">
+                    📅
+                </div>
+
+                <div class="app-info">
+
+                    <span class="app-name">
+                        Leave Application
+                    </span>
+
+                    <span class="app-description">
+                        Apply and manage staff leave requests
+                    </span>
+
+                </div>
+
+                <div class="arrow">
+                    ›
+                </div>
+
+            </button>
+
+        </div>
+
     </main>
-    <script src="script/user.js"></script>
-    <script src="script/auth/home.js"></script>
+
+
+    <script>
+        function openLeaveApp() {
+            window.location.href = "leaveapp.html";
+        }
+    </script>
+
 </body>
 </html>
