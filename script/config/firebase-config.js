@@ -1,6 +1,3 @@
-
-// Paste your Firebase Web App configuration here.
-// Firebase Console > Project settings > Your apps > Web app > SDK setup and configuration
 window.KOVELI_FIREBASE_CONFIG = {
   apiKey: "AIzaSyBJe4nvC4Q2p-lBSth8a4LOSkWIwW8Zs2g",
   authDomain: "housekeeping-791a4.firebaseapp.com",
