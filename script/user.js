@@ -17,7 +17,7 @@ window.KOVELI_USERS = [
         department: "Koveli Lounge",
         landingPage: "admin.html",
         active: true
-    }
+    },
    {
     "username": "irufan",
     "name": "Abdulla Irufan",
