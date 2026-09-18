@@ -950,7 +950,8 @@ body.leave-page{
     </script>
     <script src="script/email-config.js?v=34"></script>
     <script src="script/email-helper.js?v=34"></script>
-    <script type="module" src="script/leave-app.js?v=34"></script>
+    <script src="script/user.js"></script>
+    <script type="module" src="script/leave-app.js?v=35"></script>
     <script src="script/portal-navbar.js?v=29"></script>
     <script src="script/notification-service.js?v=29"></script>
     <script src="script/inbox.js?v=29"></script>
@@ -960,7 +961,24 @@ body.leave-page{
  'use strict';
  const $=id=>document.getElementById(id);
  function session(){
-  try{return JSON.parse(localStorage.getItem('staffPortalSession')||'null')}catch{return null}
+  try{
+   const keys=['koveliActiveSession','staffPortalSession','koveliUserSession','userSession'];
+   for(const key of keys){
+    const raw=localStorage.getItem(key)||sessionStorage.getItem(key);
+    if(!raw)continue;
+    const s=JSON.parse(raw);
+    if(s && (s.id||s.username||s.name)){
+     return {
+      ...s,
+      id:s.id||s.uid||s.username,
+      rcno:s.rcno||s.staffId||s.id||s.username,
+      name:s.name||s.fullName||s.username||'Staff',
+      role:s.role||'Staff'
+     };
+    }
+   }
+  }catch(e){console.warn('Session read error:',e)}
+  return null;
  }
  function render(){
   const s=session();
@@ -980,7 +998,7 @@ body.leave-page{
    localStorage.removeItem('koveliRememberLogin');
    localStorage.removeItem('koveliActiveSession');
    sessionStorage.removeItem('koveliActiveSession');
-   location.href='index.html';
+   location.href='login.html';
   });
   window.addEventListener('storage',render);
  }
