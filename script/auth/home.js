@@ -1,40 +1,30 @@
-firebase.initializeApp(window.KOVELI_FIREBASE_CONFIG);
-
 const who = document.getElementById("who");
 const logoutButton = document.getElementById("logout");
+const sessionUser = window.getKoveliSessionUser();
 
-firebase.auth().onAuthStateChanged(async (user) => {
-    if (!user) {
-        location.href = "login.html";
-        return;
-    }
-
-    const approved = window.getKoveliApprovedUser(user);
+if (!sessionUser) {
+    location.replace("login.html");
+} else {
+    const approved = window.getKoveliUserByUsername(sessionUser.username);
 
     if (!approved) {
-        await firebase.auth().signOut();
-        location.href = "system-authorization.html";
-        return;
+        sessionStorage.removeItem("koveliUser");
+        location.replace("login.html");
+    } else {
+        who.innerHTML =
+            "<b>" + escapeHtml(approved.name || approved.username) + "</b><br>" +
+            escapeHtml(approved.username) + "<br>Role: " +
+            escapeHtml(approved.role || "user");
     }
+}
 
-    who.innerHTML =
-        "<b>" + escapeHtml(approved.name || user.email) + "</b><br>" +
-        escapeHtml(user.email) + "<br>Role: " +
-        escapeHtml(approved.role || "user");
-});
-
-logoutButton.addEventListener("click", async () => {
-    await firebase.auth().signOut();
-    sessionStorage.clear();
+logoutButton.addEventListener("click", () => {
+    sessionStorage.removeItem("koveliUser");
     location.href = "login.html";
 });
 
 function escapeHtml(value) {
-    return String(value).replace(/[&<>'"]/g, (character) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        "'": "&#39;",
-        '"': "&quot;"
+    return String(value).replace(/[&<>'"]/g, character => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"
     })[character]);
 }
