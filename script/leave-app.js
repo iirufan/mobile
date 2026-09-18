@@ -29,7 +29,43 @@ let dropdownList = null;
 let searchInput = null;
 
 // ========== SESSION KEY ==========
-const SESSION_KEY = 'staffPortalSession';
+const SESSION_KEY = 'koveliActiveSession';
+const LEGACY_SESSION_KEY = 'staffPortalSession';
+
+function normalizePortalUser(user) {
+    if (!user || typeof user !== 'object') return null;
+    const username = String(user.username || user.userName || '').trim();
+    const id = String(user.id || user.uid || user.staffId || user.rcno || username).trim();
+    if (!id && !username) return null;
+
+    return {
+        ...user,
+        id: id || username,
+        rcno: String(user.rcno || user.staffId || id || username),
+        username,
+        name: String(user.name || user.fullName || username || 'Staff'),
+        role: String(user.role || 'Staff'),
+        contact: String(user.contact || user.phone || ''),
+        email: String(user.email || ''),
+        pass: String(user.pass || user.pin || ''),
+        pattern: String(user.pattern || ''),
+        active: user.active !== false && String(user.status || 'active').toLowerCase() !== 'disabled'
+    };
+}
+
+function getUserJsUsers() {
+    const candidates = [
+        window.KOVELI_USERS,
+        window.USERS,
+        window.users,
+        window.USER_DATA,
+        window.userData
+    ];
+    for (const value of candidates) {
+        if (Array.isArray(value)) return value.map(normalizePortalUser).filter(Boolean);
+    }
+    return [];
+}
 
 // ========== APP VERSION ==========
 const APP_VERSION = '2.1';
@@ -40,21 +76,39 @@ window.staffList = [];
 
 // ========== GET SESSION ==========
 function getSession() {
-    try {
-        const data = localStorage.getItem(SESSION_KEY);
-        if (data) {
-            const session = JSON.parse(data);
-            if (Date.now() - session.timestamp > 24 * 60 * 60 * 1000) {
-                localStorage.removeItem(SESSION_KEY);
-                return null;
+    const keys = [
+        SESSION_KEY,
+        LEGACY_SESSION_KEY,
+        'koveliUserSession',
+        'userSession'
+    ];
+
+    for (const key of keys) {
+        try {
+            const raw = localStorage.getItem(key) || sessionStorage.getItem(key);
+            if (!raw) continue;
+
+            const session = JSON.parse(raw);
+
+            if (
+                session.timestamp &&
+                Date.now() - Number(session.timestamp) > 24 * 60 * 60 * 1000
+            ) {
+                localStorage.removeItem(key);
+                sessionStorage.removeItem(key);
+                continue;
             }
-            return session;
+
+            const normalized = normalizePortalUser(session);
+            if (normalized && normalized.active) return normalized;
+        } catch (e) {
+            console.warn('Could not read session:', key, e);
         }
-        return null;
-    } catch {
-        return null;
     }
+
+    return null;
 }
+
 
 // ========== HELPER: GET GMT+5 DATE/TIME ==========
 function getGMT5DateTime() {
@@ -2372,7 +2426,9 @@ window.logoutUser = function() {
     if (!confirm(`Logout ${currentLoggedInStaff.name}?`)) return;
     currentLoggedInStaff = null;
     localStorage.removeItem(SESSION_KEY);
-    window.location.href = 'index.html';
+    localStorage.removeItem(LEGACY_SESSION_KEY);
+    sessionStorage.removeItem(SESSION_KEY);
+    window.location.href = 'login.html';
 };
 
 // ========== LOADING POPUP ==========
@@ -2925,18 +2981,30 @@ async function initApp() {
 
     await frlManager.loadFRLData();
 
-    // Load staff data directly from Firestore
-    staffData = [];
-    if (db && firebaseConnected) {
+    // Load authorized users from script/user.js.
+    // Firestore is still used for leave requests/balances, but NOT for login.
+    staffData = getUserJsUsers();
+
+    // Legacy fallback only: if user.js has no user array, read the old staff collection.
+    if (!staffData.length && db && firebaseConnected) {
         try {
             const staffSnap = await db.collection('staff').get();
             staffSnap.forEach(doc => {
                 const d = doc.data();
-                staffData.push({ id: doc.id, ...d, rcno: d.rcno || doc.id });
+                staffData.push(normalizePortalUser({
+                    id: doc.id,
+                    ...d,
+                    rcno: d.rcno || doc.id
+                }));
             });
-            staffData.sort((a,b) => String(a.name||'').localeCompare(String(b.name||'')));
-        } catch (e) { console.warn('Could not load staff list:', e); }
+        } catch (e) {
+            console.warn('Could not load legacy staff list:', e);
+        }
     }
+
+    staffData = staffData.filter(Boolean);
+    staffData.sort((a,b) => String(a.name||'').localeCompare(String(b.name||'')));
+    window.staffList = staffData;
     staffLoaded = true;
 
     const sessionStaff = getSession();
@@ -2960,7 +3028,7 @@ async function initApp() {
         await loadLeaveData();
         showTemporaryFeedback(`👋 Welcome ${sessionStaff.name}!`);
     } else {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         return;
     }
 
