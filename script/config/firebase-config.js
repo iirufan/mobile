@@ -1,4 +1,6 @@
-// Copy your Firebase web config here. Keep this file as script/firebase-config.js
+
+// Paste your Firebase Web App configuration here.
+// Firebase Console > Project settings > Your apps > Web app > SDK setup and configuration
 window.KOVELI_FIREBASE_CONFIG = {
   apiKey: "AIzaSyBJe4nvC4Q2p-lBSth8a4LOSkWIwW8Zs2g",
   authDomain: "housekeeping-791a4.firebaseapp.com",
@@ -9,4 +11,3 @@ window.KOVELI_FIREBASE_CONFIG = {
   appId: "1:451334815894:web:df851c38bd22b6094382b7",
   measurementId: "G-2NQHXVSSRR"
 };
-
