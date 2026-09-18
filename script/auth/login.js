@@ -1,18 +1,12 @@
 const msg = document.getElementById("msg");
 const form = document.getElementById("form");
 const btn = document.getElementById("loginBtn");
-const emailInput = document.getElementById("email");
+const usernameInput = document.getElementById("username");
 const passwordInput = document.getElementById("password");
 
 function show(message, type = "error") {
     msg.textContent = message;
     msg.className = "msg show " + type;
-}
-
-try {
-    firebase.initializeApp(window.KOVELI_FIREBASE_CONFIG);
-} catch (error) {
-    show("Firebase configuration is not ready. Update scripts/config/firebase-config.js.");
 }
 
 form.addEventListener("submit", async (event) => {
@@ -21,28 +15,30 @@ form.addEventListener("submit", async (event) => {
     msg.className = "msg";
 
     try {
-        const credential = await firebase.auth().signInWithEmailAndPassword(
-            emailInput.value.trim(),
-            passwordInput.value
-        );
-
-        const approved = window.getKoveliApprovedUser(credential.user);
+        const username = usernameInput.value.trim().toLowerCase();
+        const approved = window.getKoveliUserByUsername(username);
 
         if (!approved) {
-            await firebase.auth().signOut();
-            sessionStorage.removeItem("koveliUser");
-            location.href = "system-authorization.html";
-            return;
+            throw new Error("Username is not approved or does not exist.");
         }
 
-        sessionStorage.setItem("koveliUser", JSON.stringify({
-            uid: credential.user.uid,
-            email: credential.user.email,
-            name: approved.name || credential.user.email,
-            role: approved.role || "user"
-        }));
+        const enteredHash = await window.sha256(passwordInput.value);
 
-        location.href = "home.html";
+        if (!approved.passwordHash || enteredHash !== approved.passwordHash) {
+            throw new Error("Incorrect username or password.");
+        }
+
+        const sessionUser = {
+            username: approved.username,
+            email: approved.email || "",
+            name: approved.name || approved.username,
+            role: approved.role || "user",
+            department: approved.department || "",
+            landingPage: approved.landingPage || "home.html"
+        };
+
+        sessionStorage.setItem("koveliUser", JSON.stringify(sessionUser));
+        location.href = sessionUser.landingPage;
     } catch (error) {
         show(error.message || "Login failed.");
     } finally {
