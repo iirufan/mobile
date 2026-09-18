@@ -1,1 +1,25 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Koveli Lounge | Home</title><link rel="stylesheet" href="styles.css"></head><body><main class="shell"><img class="logo" src="koveli-logo.png" alt="Koveli Lounge"><section class="card"><h1>KOVELI Lounge System</h1><p class="sub">Authorized access</p><div id="who" class="userbox"></div><button id="logout">Logout</button></section></main><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script><script src="firebase-config.js"></script><script src="user.js"></script><script>firebase.initializeApp(window.KOVELI_FIREBASE_CONFIG);firebase.auth().onAuthStateChanged(async u=>{if(!u)return location.href='login.html';const a=getKoveliApprovedUser(u);if(!a){await firebase.auth().signOut();return location.href='system-authorization.html'}who.innerHTML='<b>'+escapeHtml(a.name||u.email)+'</b><br>'+escapeHtml(u.email)+'<br>Role: '+escapeHtml(a.role||'user')});logout.onclick=async()=>{await firebase.auth().signOut();sessionStorage.clear();location.href='login.html'};function escapeHtml(v){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koveli Lounge | Home</title>
+    <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+    <main class="shell">
+        <img class="logo" src="assets/images/koveli-logo.png" alt="Koveli Lounge">
+        <section class="card">
+            <h1>KOVELI Lounge System</h1>
+            <p class="sub">Authorized access</p>
+            <div id="who" class="userbox"></div>
+            <button id="logout" type="button">Logout</button>
+        </section>
+    </main>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+    <script src="scripts/config/firebase-config.js"></script>
+    <script src="scripts/user.js"></script>
+    <script src="scripts/auth/home.js"></script>
+</body>
+</html>
