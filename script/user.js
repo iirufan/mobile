@@ -18,6 +18,16 @@ window.KOVELI_USERS = [
         landingPage: "admin.html",
         active: true
     }
+   {
+    "username": "irufan",
+    "name": "Abdulla Irufan",
+    "email": "iirufan@gmail.com",
+    "passwordHash": "557808176cfefce664c3694042b720e1be6a41974527178598622edc21dc6d9d",
+    "role": "user",
+    "department": "Koveli Lounge",
+    "landingPage": "home.html",
+    "active": true
+}
 ];
 
 window.getKoveliUserByUsername = function (username) {
