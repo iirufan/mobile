@@ -1,27 +1,45 @@
-/*
-  KOVELI LOUNGE - APPROVED USERS
-  --------------------------------
-  Admin updates this file after reviewing a Firebase registration.
-  IMPORTANT: Never put passwords in this file.
+/* KOVELI LOUNGE - APPROVED USERS
+   Admin maintains this file.
 
-  Match users by Firebase Authentication UID (recommended), or by email.
+   IMPORTANT:
+   - Login uses username + password from this file.
+   - Passwords are stored as SHA-256 hashes, not plain text.
+   - Registration requests are stored in Firebase Realtime Database only.
+   - Firebase Authentication is NOT used.
 */
 window.KOVELI_USERS = [
-  {
-    uid: "PASTE_FIREBASE_UID_HERE",
-    email: "admin@example.com",
-    name: "System Administrator",
-    role: "admin",
-    active: true
-  }
+    {
+        username: "admin",
+        name: "System Administrator",
+        email: "admin@example.com",
+        passwordHash: "REPLACE_WITH_SHA256_HASH_FROM_ADMIN_PAGE",
+        role: "admin",
+        department: "Koveli Lounge",
+        landingPage: "admin.html",
+        active: true
+    }
 ];
 
-window.getKoveliApprovedUser = function(firebaseUser) {
-  if (!firebaseUser) return null;
-  const email = String(firebaseUser.email || "").trim().toLowerCase();
-  return (window.KOVELI_USERS || []).find(u => {
-    const uidMatch = u.uid && u.uid !== "PASTE_FIREBASE_UID_HERE" && u.uid === firebaseUser.uid;
-    const emailMatch = u.email && String(u.email).trim().toLowerCase() === email;
-    return u.active !== false && (uidMatch || emailMatch);
-  }) || null;
+window.getKoveliUserByUsername = function (username) {
+    const key = String(username || "").trim().toLowerCase();
+    return (window.KOVELI_USERS || []).find(function (user) {
+        return user.active !== false &&
+            String(user.username || "").trim().toLowerCase() === key;
+    }) || null;
+};
+
+window.sha256 = async function (text) {
+    const data = new TextEncoder().encode(String(text));
+    const digest = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(digest))
+        .map(function (b) { return b.toString(16).padStart(2, "0"); })
+        .join("");
+};
+
+window.getKoveliSessionUser = function () {
+    try {
+        return JSON.parse(sessionStorage.getItem("koveliUser") || "null");
+    } catch (_) {
+        return null;
+    }
 };
