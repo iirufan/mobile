@@ -118,11 +118,11 @@ async function findTokens(db, recipientKeys) {
   const matches = [];
 
   /*
-    Read pushToken without an enabled query first.
+    Read pushTokens without an enabled query first.
     This avoids a lookup failure if older device records use a missing/different
     enabled value, while still only sending to records where enabled === true.
   */
-  const snap = await db.collection("pushToken").get();
+  const snap = await db.collection("pushTokens").get();
 
   let enabledDevices = 0;
 
@@ -172,7 +172,7 @@ async function removeInvalidTokens(db, tokens) {
 
   for (const token of uniqueTokens) {
     const snap = await db
-      .collection("pushToken")
+      .collection("pushTokens")
       .where("token", "==", token)
       .get();
 
