@@ -14,7 +14,7 @@
 <label>Title<input id="msgTitle" maxlength="80" placeholder="e.g. Duty roster updated"></label>
 <label class="full">Message<textarea id="msgBody" maxlength="500" rows="4" placeholder="Type the message staff should receive"></textarea></label>
 <label>Open Page<select id="msgUrl"><option value="/notifications.html">Notifications</option><option value="/dashboard.html">Dashboard</option><option value="/leave.html">Leave</option><option value="/dutychange.html">Duty Change</option></select></label>
-<label>Admin Send Key<input id="msgKey" type="password" autocomplete="off" placeholder="Vercel PUSH_ADMIN_KEY"></label>
+
 </div><div class="actions"><button onclick="sendStaffMessage()">Send Notification</button></div><div id="msgResult"></div></section>
 </div></main><script>
 const s=requireLogin(true);if(s){n.innerHTML=nav("admin");loadAll();setupMessaging()}
@@ -50,7 +50,7 @@ async function sendStaffMessage(){
   if(msgTarget.value==="role"){targetValue=msgRole.value;recipients=all.filter(x=>lower(x.role)===lower(msgRole.value))}
   if(msgTarget.value==="staff"){targetValue=msgStaff.value;recipients=all.filter(x=>lower(x.username)===lower(msgStaff.value))}
   if(!recipients.length)throw new Error("No matching staff found.");
-  const r=await fetch("/api/send-notification",{method:"POST",headers:{"Content-Type":"application/json","x-admin-key":msgKey.value},body:JSON.stringify({
+  const r=await fetch("/api/send-notification",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
    title:msgTitle.value,body:msgBody.value,url:msgUrl.value,targetType:msgTarget.value,targetValue,
    recipients:recipients.map(x=>({username:x.username,rcno:x.rcno,fullname:x.fullname,role:x.role}))
   })});
