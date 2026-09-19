@@ -14,6 +14,7 @@
 <label>Title<input id="msgTitle" maxlength="80" placeholder="e.g. Duty roster updated"></label>
 <label class="full">Message<textarea id="msgBody" maxlength="500" rows="4" placeholder="Type the message staff should receive"></textarea></label>
 <label>Open Page<select id="msgUrl"><option value="/notifications.html">Notifications</option><option value="/dashboard.html">Dashboard</option><option value="/leave.html">Leave</option><option value="/dutychange.html">Duty Change</option></select></label>
+<label>Admin Send Key<input id="msgKey" type="password" autocomplete="off" placeholder="Enter PUSH_ADMIN_KEY"></label>
 
 </div><div class="actions"><button onclick="sendStaffMessage()">Send Notification</button></div><div id="msgResult"></div></section>
 </div></main><script>
@@ -50,13 +51,18 @@ async function sendStaffMessage(){
   if(msgTarget.value==="role"){targetValue=msgRole.value;recipients=all.filter(x=>lower(x.role)===lower(msgRole.value))}
   if(msgTarget.value==="staff"){targetValue=msgStaff.value;recipients=all.filter(x=>lower(x.username)===lower(msgStaff.value))}
   if(!recipients.length)throw new Error("No matching staff found.");
-  const r=await fetch("/api/send-notification",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
-   title:msgTitle.value,body:msgBody.value,url:msgUrl.value,targetType:msgTarget.value,targetValue,
-   recipients:recipients.map(x=>({username:x.username,rcno:x.rcno,fullname:x.fullname,role:x.role}))
-  })});
-  const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Send failed");
-  msg(msgResult,`Saved for ${d.recipients} staff. Push delivered to ${d.successCount} registered device(s).`,"ok");
+  const adminKey=String(msgKey.value||"").trim();
+  if(!adminKey)throw new Error("Enter the Admin Send Key.");
+  const title=String(msgTitle.value||"").trim(),message=String(msgBody.value||"").trim();
+  if(!title)throw new Error("Enter a notification title.");
+  if(!message)throw new Error("Enter a notification message.");
+  const recipientKeys=[...new Set(recipients.map(x=>`${lower(x.username)}_${String(x.rcno||"").trim()}`).filter(Boolean))];
+  const r=await fetch("/api/send-notification",{method:"POST",headers:{"Content-Type":"application/json","x-admin-key":adminKey},body:JSON.stringify({title,message,url:msgUrl.value,recipientKeys,createdBy:s?.username||"Admin"})});
+  let d={};try{d=await r.json()}catch(_){}
+  if(!r.ok||!d.ok)throw new Error(d.error||`Notification API failed (${r.status}).`);
+  if(d.warning)msg(msgResult,d.warning,"ok");
+  else msg(msgResult,`Notification saved. Push sent to ${d.sent||0} device(s)${d.failed?`; ${d.failed} failed.`:"."}`,"ok");
   msgBody.value="";
- }catch(e){msg(msgResult,e.message,"bad")}
+ }catch(e){msg(msgResult,e.message||String(e),"bad")}
 }
 </script></body></html>
