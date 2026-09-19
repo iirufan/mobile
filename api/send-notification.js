@@ -290,23 +290,21 @@ module.exports = async function handler(req, res) {
 
     for (const tokenChunk of splitIntoChunks(lookup.tokens, 500)) {
       const response = await messaging.sendEachForMulticast({
-        tokens: tokenChunk,
-        notification: {
-          title,
-          body: message
-        },
-        data: {
-          notificationId: String(notificationRef.id),
-          title: String(title),
-          body: String(message),
-          url: String(url)
-        },
-        webpush: {
-          fcmOptions: {
-            link: url
-          }
-        }
-      });
+  tokens: tokenChunk,
+
+  data: {
+    notificationId: String(notificationRef.id),
+    title: String(title),
+    body: String(message),
+    url: String(url)
+  },
+
+  webpush: {
+    headers: {
+      Urgency: "high"
+    }
+  }
+});
 
       sent += response.successCount;
       failed += response.failureCount;
