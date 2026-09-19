@@ -1,0 +1,25 @@
+{
+  "name": "Koveli Lounge Staff",
+  "short_name": "Koveli Staff",
+  "description": "Koveli Lounge staff portal",
+  "start_url": "/dashboard.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#071b2b",
+  "theme_color": "#073541",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/koveli-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/koveli-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

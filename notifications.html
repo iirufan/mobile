@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Koveli | Notifications</title><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><link rel="stylesheet" href="css/app.css?v=7">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
+<script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=7"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=7"></script></head>
+<body><div id="n"></div><main class="shell"><div class="grid">
+<section class="card"><h1>Notifications</h1><p class="muted">Koveli staff messages and alerts.</p><div class="actions"><button id="enableBtn">Enable Phone Notifications</button><button class="secondary" onclick="installKoveliPWA()">Install App</button><button class="secondary" onclick="markAllNotificationsRead().then(loadNotes)">Mark All Read</button></div><div id="m"></div></section>
+<section class="card"><div id="list" class="notification-list"></div></section>
+</div></main><script>
+const s=requireLogin();if(s){n.innerHTML=nav("notifications");loadNotes()}
+enableBtn.onclick=async()=>{try{await enablePushNotifications();msg(m,"Phone notifications are enabled on this device.","ok")}catch(e){msg(m,e.message,"bad")}}
+async function loadNotes(){
+ const key=notifKey(s),snap=await DB().collection("notifications").where("recipientKeys","array-contains",key).get();
+ const rows=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+ list.innerHTML=rows.map(x=>{const read=(x.readBy||[]).includes(key);return `<article class="note-item ${read?"read":"unread"}" onclick="markNotificationRead('${x.id}').then(loadNotes)"><div><b>${esc(x.title)}</b>${read?"":'<span class="new-pill">NEW</span>'}</div><p>${esc(x.body)}</p><small>${x.createdAt?.toDate?x.createdAt.toDate().toLocaleString():""}</small></article>`}).join("")||'<p class="muted">No notifications yet.</p>';
+ await refreshNotificationBadge();
+}
+</script></body></html>

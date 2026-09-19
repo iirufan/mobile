@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/send-leave-email.js": {
+      "maxDuration": 30
+    }
+  }
+}

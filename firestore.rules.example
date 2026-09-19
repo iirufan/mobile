@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // IMPORTANT: This matches the current client-side user.js login design.
+    // It is NOT strong production authorization. Firebase Auth is recommended.
+    match /registrations/{doc} { allow read, write: if true; }
+    match /passwordChanges/{doc} { allow read, write: if true; }
+    match /leaveApplications/{doc} { allow read, write: if true; }
+    match /dutyChanges/{doc} { allow read, write: if true; }
+    match /pushTokens/{doc} { allow read, write: if true; }
+    match /notificationUsers/{doc} { allow read, write: if true; }
+    match /notifications/{doc} { allow read, update: if true; allow create: if false; }
+  }
+}

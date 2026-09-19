@@ -1,0 +1,62 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Koveli | Admin</title><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><link rel="stylesheet" href="css/app.css?v=7">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=7"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=7"></script></head><body><div id="n"></div><main class="shell"><div class="grid">
+<section class="card"><h1>Admin</h1><p class="muted">Review registrations/password changes, then generate a complete replacement <b>script/user.js</b>.</p><div id="m"></div><div class="actions"><button onclick="generate()">Generate Updated user.js</button><button class="secondary" onclick="loadAll()">Refresh</button></div></section>
+<section class="card"><h2>Pending Registrations</h2><div class="scroll"><table><thead><tr><th>User</th><th>RC</th><th>Email / Contact</th><th>Role</th><th>Action</th></tr></thead><tbody id="regs"></tbody></table></div></section>
+<section class="card"><h2>Password Changes</h2><div class="scroll"><table><thead><tr><th>User</th><th>RC</th><th>New Password</th><th>Action</th></tr></thead><tbody id="pwds"></tbody></table></div></section>
+<section class="card"><h2>Leave Applications</h2><div class="scroll"><table><thead><tr><th>Staff</th><th>Date</th><th>Duty</th><th>Reason</th><th>Email</th><th>Status</th></tr></thead><tbody id="leaves"></tbody></table></div></section>
+<section class="card"><h2>Duty Changes</h2><div class="scroll"><table><thead><tr><th>Staff</th><th>Date</th><th>Current</th><th>With</th><th>Requested</th><th>Status</th></tr></thead><tbody id="duties"></tbody></table></div></section>
+
+<section class="card"><h2>Staff Messaging</h2><p class="muted">Send a push message to all staff, a role, or one staff member.</p>
+<div class="formgrid">
+<label>Send To<select id="msgTarget"><option value="all">All Staff</option><option value="role">Role</option><option value="staff">Individual Staff</option></select></label>
+<label id="roleWrap" style="display:none">Role<select id="msgRole"><option value="staff">Staff</option><option value="supervisor">Supervisor</option><option value="HK">HK</option><option value="admin">Admin</option></select></label>
+<label id="staffWrap" style="display:none">Staff<select id="msgStaff"></select></label>
+<label>Title<input id="msgTitle" maxlength="80" placeholder="e.g. Duty roster updated"></label>
+<label class="full">Message<textarea id="msgBody" maxlength="500" rows="4" placeholder="Type the message staff should receive"></textarea></label>
+<label>Open Page<select id="msgUrl"><option value="/notifications.html">Notifications</option><option value="/dashboard.html">Dashboard</option><option value="/leave.html">Leave</option><option value="/dutychange.html">Duty Change</option></select></label>
+<label>Admin Send Key<input id="msgKey" type="password" autocomplete="off" placeholder="Vercel PUSH_ADMIN_KEY"></label>
+</div><div class="actions"><button onclick="sendStaffMessage()">Send Notification</button></div><div id="msgResult"></div></section>
+</div></main><script>
+const s=requireLogin(true);if(s){n.innerHTML=nav("admin");loadAll();setupMessaging()}
+let regDocs=[],pwdDocs=[];
+async function loadAll(){
+ const [r,p,l,d]=await Promise.all(["registrations","passwordChanges","leaveApplications","dutyChanges"].map(c=>DB().collection(c).get()));
+ regDocs=r.docs.map(x=>({id:x.id,...x.data()}));pwdDocs=p.docs.map(x=>({id:x.id,...x.data()}));
+ regs.innerHTML=regDocs.filter(x=>x.status==="pending").map(x=>`<tr><td><b>${esc(x.fullname)}</b><br>${esc(x.username)}</td><td>${esc(x.rcno)}</td><td>${esc(x.email)}<br>${esc(x.contact)}</td><td><select id="role_${x.id}"><option>staff</option><option>supervisor</option><option>admin</option><option>HK</option></select></td><td><button onclick="approveReg('${x.id}')">Approve</button></td></tr>`).join("")||'<tr><td colspan="5">None</td></tr>';
+ pwds.innerHTML=pwdDocs.filter(x=>x.status==="pending").map(x=>`<tr><td>${esc(x.fullname)}<br>${esc(x.username)}</td><td>${esc(x.rcno)}</td><td>${esc(x.newPassword)}</td><td><button onclick="approvePwd('${x.id}')">Approve</button></td></tr>`).join("")||'<tr><td colspan="4">None</td></tr>';
+ leaves.innerHTML=l.docs.map(q=>{const x=q.data();return`<tr><td>${esc(x.fullname)}<br>${esc(x.rcno)}</td><td>${esc(x.leaveDate)}</td><td>${esc(x.dutyTime)}</td><td>${esc(x.reason)}</td><td>${esc(x.emailStatus)}</td><td>${esc(x.status)}</td></tr>`}).join("");
+ duties.innerHTML=d.docs.map(q=>{const x=q.data();return`<tr><td>${esc(x.fullname)}</td><td>${esc(x.changeDate)}</td><td>${esc(x.currentDuty)}</td><td>${esc(x.withFullname)}</td><td>${esc(x.requestedDuty)}</td><td>${esc(x.status)}</td></tr>`}).join("");
+}
+async function approveReg(id){const role=document.getElementById("role_"+id).value;await DB().collection("registrations").doc(id).update({status:"approved",role,approvedBy:s.username,approvedAt:stamp()});await loadAll()}
+async function approvePwd(id){await DB().collection("passwordChanges").doc(id).update({status:"approved",approvedBy:s.username,approvedAt:stamp()});await loadAll()}
+async function generate(){
+ const users=getUsers().map(x=>({...x}));
+ const approvedRegs=regDocs.filter(x=>x.status==="approved");
+ for(const r of approvedRegs){const i=users.findIndex(x=>lower(x.username)===lower(r.username));const u={username:r.username,fullname:r.fullname,rcno:r.rcno,email:r.email||"",contact:r.contact||"",password:r.password,role:r.role||"staff",active:true};if(i>=0)users[i]=u;else users.push(u)}
+ for(const p of pwdDocs.filter(x=>x.status==="approved")){const i=users.findIndex(x=>lower(x.username)===lower(p.username));if(i>=0)users[i].password=p.newPassword}
+ const text=`// Generated by Koveli Admin on ${new Date().toISOString()}\nwindow.PORTAL_USERS = ${JSON.stringify(users,null,2)};\n`;
+ const blob=new Blob([text],{type:"text/javascript"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="user.js";a.click();URL.revokeObjectURL(a.href);msg(m,"user.js generated. Replace script/user.js in GitHub and redeploy Vercel.","ok")
+}
+
+function setupMessaging(){
+ const users=getUsers().filter(x=>x.active!==false);
+ msgStaff.innerHTML=users.map(u=>`<option value="${esc(u.username)}">${esc(u.fullname)} (${esc(u.rcno)})</option>`).join("");
+ msgTarget.onchange=()=>{roleWrap.style.display=msgTarget.value==="role"?"block":"none";staffWrap.style.display=msgTarget.value==="staff"?"block":"none"};
+}
+async function sendStaffMessage(){
+ try{
+  const all=getUsers().filter(x=>x.active!==false);
+  let recipients=all,targetValue="";
+  if(msgTarget.value==="role"){targetValue=msgRole.value;recipients=all.filter(x=>lower(x.role)===lower(msgRole.value))}
+  if(msgTarget.value==="staff"){targetValue=msgStaff.value;recipients=all.filter(x=>lower(x.username)===lower(msgStaff.value))}
+  if(!recipients.length)throw new Error("No matching staff found.");
+  const r=await fetch("/api/send-notification",{method:"POST",headers:{"Content-Type":"application/json","x-admin-key":msgKey.value},body:JSON.stringify({
+   title:msgTitle.value,body:msgBody.value,url:msgUrl.value,targetType:msgTarget.value,targetValue,
+   recipients:recipients.map(x=>({username:x.username,rcno:x.rcno,fullname:x.fullname,role:x.role}))
+  })});
+  const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.error||"Send failed");
+  msg(msgResult,`Saved for ${d.recipients} staff. Push delivered to ${d.successCount} registered device(s).`,"ok");
+  msgBody.value="";
+ }catch(e){msg(msgResult,e.message,"bad")}
+}
+</script></body></html>

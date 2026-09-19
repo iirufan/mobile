@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><title>Koveli | Dashboard</title><link rel="stylesheet" href="css/app.css?v=7">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=7"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=7"></script></head><body><div id="n"></div><main class="shell"><div class="grid">
+<section class="card"><h1 id="hello">Dashboard</h1><p class="muted">Leave applications, duty changes and security requests.</p></section>
+<a class="card third" href="leave.html"><h3>Leave Application</h3><p class="muted">Submit leave with optional document.</p></a>
+<a class="card third" href="dutychange.html"><h3>Duty Change</h3><p class="muted">Request a duty swap/change.</p></a>
+<a class="card third" href="security.html"><h3>Security</h3><p class="muted">Request a password change.</p></a>
+<section class="card"><h2>My Recent Requests</h2><div class="scroll"><table><thead><tr><th>Type</th><th>Date</th><th>Details</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+</div></main><script>
+const s=requireLogin();if(s){n.innerHTML=nav("dashboard");hello.textContent=`Welcome, ${s.fullname}`;load()}
+async function load(){let all=[];for(const [col,type] of [["leaveApplications","Leave"],["dutyChanges","Duty Change"]]){const q=await DB().collection(col).where("username","==",s.username).get();q.forEach(d=>all.push({type,...d.data()}))}
+all.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));rows.innerHTML=all.slice(0,20).map(x=>`<tr><td>${esc(x.type)}</td><td>${esc(x.leaveDate||x.changeDate||"")}</td><td>${esc(x.reason||x.requestedDuty||"")}</td><td><span class="badge">${esc(x.status||"pending")}</span></td></tr>`).join("")||`<tr><td colspan="4">No requests yet.</td></tr>`}
+</script></body></html>
