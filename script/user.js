@@ -11,7 +11,7 @@ window.PORTAL_USERS = [
     rcno: "ADMIN001",
     email: "",
     contact: "",
-    password: "ChangeMe123!",
+    password: "iirufan1",
     role: "admin",
     active: true
   }
