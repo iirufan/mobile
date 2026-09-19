@@ -6,21 +6,22 @@ function clean(value) {
   return String(value || "").trim();
 }
 
+function lower(value) {
+  return clean(value).toLowerCase();
+}
+
 function readServiceAccount() {
   if (process.env.FIREBASE_SERVICE_ACCOUNT_JSON) {
     const parsed = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
-
     if (parsed.private_key) {
       parsed.private_key = String(parsed.private_key).replace(/\\n/g, "\n");
     }
-
     return parsed;
   }
 
   const projectId = clean(process.env.FIREBASE_PROJECT_ID);
   const clientEmail = clean(process.env.FIREBASE_CLIENT_EMAIL);
-  const privateKey = String(process.env.FIREBASE_PRIVATE_KEY || "")
-    .replace(/\\n/g, "\n");
+  const privateKey = String(process.env.FIREBASE_PRIVATE_KEY || "").replace(/\\n/g, "\n");
 
   if (!projectId || !clientEmail || !privateKey) {
     throw new Error(
@@ -55,95 +56,118 @@ function getAdminApp() {
 
 function splitIntoChunks(items, size) {
   const result = [];
-
   for (let i = 0; i < items.length; i += size) {
     result.push(items.slice(i, i + size));
   }
-
   return result;
 }
 
 function uniqueStrings(values) {
-  return [
-    ...new Set(
-      (Array.isArray(values) ? values : [])
-        .map(value => clean(value))
-        .filter(Boolean)
-    )
-  ];
+  return [...new Set(
+    (Array.isArray(values) ? values : [])
+      .map(clean)
+      .filter(Boolean)
+  )];
 }
 
 /*
- * Firestore collection used by the Koveli app:
- *
- * pushToken
- *   enabled: true
- *   fullname: "Abdulla Irufan"
- *   rcno: "979"
- *   role: "supervisor"
- *   token: "..."
- *   username: "Irufan"
- *   usernameLower: "irufan"
- *
- * The admin page may send username, usernameLower, RC No, or fullname.
- * This function supports all four.
- */
-async function findTokens(db, recipientKeys) {
-  const keys = uniqueStrings(recipientKeys);
+  Accepts both the NEW admin format:
+    recipientKeys: ["irufan", "979"]
 
-  if (!keys.length) {
-    return [];
+  and the OLD admin format:
+    recipientKeys: ["irufan_979"]
+
+  This makes deployment safer if the browser still has an older cached admin.html.
+*/
+function expandRecipientKeys(recipientKeys) {
+  const expanded = new Set();
+
+  for (const raw of uniqueStrings(recipientKeys)) {
+    const value = lower(raw);
+    if (!value) continue;
+
+    expanded.add(value);
+
+    // Backward compatibility with old "username_rcno" keys.
+    const lastUnderscore = value.lastIndexOf("_");
+    if (lastUnderscore > 0 && lastUnderscore < value.length - 1) {
+      const usernamePart = clean(value.slice(0, lastUnderscore));
+      const rcPart = clean(value.slice(lastUnderscore + 1));
+      if (usernamePart) expanded.add(lower(usernamePart));
+      if (rcPart) expanded.add(lower(rcPart));
+    }
   }
 
-  const wanted = new Set(
-    keys
-      .map(key => clean(key).toLowerCase())
-      .filter(Boolean)
-  );
+  return [...expanded];
+}
 
+async function findTokens(db, recipientKeys) {
+  const expandedKeys = expandRecipientKeys(recipientKeys);
+  if (!expandedKeys.length) {
+    return {
+      tokens: [],
+      expandedKeys: [],
+      scannedDevices: 0,
+      enabledDevices: 0,
+      matches: []
+    };
+  }
+
+  const wanted = new Set(expandedKeys);
   const tokens = new Set();
+  const matches = [];
 
-  // Read active registered devices from the correct collection.
-  const snap = await db
-    .collection("pushToken")
-    .where("enabled", "==", true)
-    .get();
+  /*
+    Read pushToken without an enabled query first.
+    This avoids a lookup failure if older device records use a missing/different
+    enabled value, while still only sending to records where enabled === true.
+  */
+  const snap = await db.collection("pushToken").get();
+
+  let enabledDevices = 0;
 
   snap.forEach(doc => {
     const data = doc.data() || {};
+    if (data.enabled !== true) return;
 
-    const username = clean(data.username).toLowerCase();
-    const usernameLower = clean(data.usernameLower).toLowerCase();
-    const rcno = clean(data.rcno).toLowerCase();
-    const fullname = clean(data.fullname).toLowerCase();
+    enabledDevices++;
 
-    const matched =
-      (username && wanted.has(username)) ||
-      (usernameLower && wanted.has(usernameLower)) ||
-      (rcno && wanted.has(rcno)) ||
-      (fullname && wanted.has(fullname));
+    const candidates = [
+      lower(data.username),
+      lower(data.usernameLower),
+      lower(data.rcno),
+      lower(data.fullname)
+    ].filter(Boolean);
 
-    if (matched && data.token) {
-      tokens.add(clean(data.token));
+    const matchedBy = candidates.find(v => wanted.has(v));
+
+    if (matchedBy && clean(data.token)) {
+      const token = clean(data.token);
+      tokens.add(token);
+
+      matches.push({
+        docId: doc.id,
+        username: clean(data.username),
+        rcno: clean(data.rcno),
+        fullname: clean(data.fullname),
+        matchedBy
+      });
     }
   });
 
-  return [...tokens].filter(Boolean);
+  return {
+    tokens: [...tokens],
+    expandedKeys,
+    scannedDevices: snap.size,
+    enabledDevices,
+    matches
+  };
 }
 
-/*
- * Remove FCM tokens that Firebase reports as invalid/unregistered.
- * Uses the same correct collection: pushToken.
- */
 async function removeInvalidTokens(db, tokens) {
   const uniqueTokens = uniqueStrings(tokens);
+  if (!uniqueTokens.length) return;
 
-  if (!uniqueTokens.length) {
-    return;
-  }
-
-  // A Firestore batch supports up to 500 writes.
-  // Query each invalid token and collect document refs first.
   const refs = [];
 
   for (const token of uniqueTokens) {
@@ -157,21 +181,16 @@ async function removeInvalidTokens(db, tokens) {
 
   for (const refChunk of splitIntoChunks(refs, 450)) {
     const batch = db.batch();
-
-    refChunk.forEach(ref => {
-      batch.delete(ref);
-    });
-
+    refChunk.forEach(ref => batch.delete(ref));
     await batch.commit();
   }
 }
 
 module.exports = async function handler(req, res) {
-  res.setHeader("Cache-Control", "no-store");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
 
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
-
     return res.status(405).json({
       ok: false,
       error: "Method not allowed."
@@ -179,12 +198,6 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    /*
-     * PUSH_ADMIN_KEY is a SERVER-SIDE secret stored in Vercel.
-     * admin.html must send the same value in the x-admin-key header.
-     *
-     * Do NOT put FIREBASE_SERVICE_ACCOUNT_JSON in frontend code.
-     */
     const expectedAdminKey = clean(process.env.PUSH_ADMIN_KEY);
     const suppliedAdminKey = clean(req.headers["x-admin-key"]);
 
@@ -202,20 +215,14 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    getAdminApp();
-
-    const db = admin.firestore();
-    const messaging = admin.messaging();
+    const app = getAdminApp();
+    const db = admin.firestore(app);
+    const messaging = admin.messaging(app);
 
     const body = req.body || {};
-
     const title = clean(body.title);
     const message = clean(body.message || body.body);
-    const url = clean(
-      body.url ||
-      body.openPage ||
-      "/notifications.html"
-    );
+    const url = clean(body.url || body.openPage || "/notifications.html");
 
     const recipientKeys = uniqueStrings(
       body.recipientKeys ||
@@ -224,84 +231,76 @@ module.exports = async function handler(req, res) {
     );
 
     if (!title) {
-      return res.status(400).json({
-        ok: false,
-        error: "Notification title is required."
-      });
+      return res.status(400).json({ ok: false, error: "Notification title is required." });
     }
 
     if (!message) {
-      return res.status(400).json({
-        ok: false,
-        error: "Notification message is required."
-      });
+      return res.status(400).json({ ok: false, error: "Notification message is required." });
     }
 
     if (!recipientKeys.length) {
-      return res.status(400).json({
-        ok: false,
-        error: "No notification recipients were supplied."
-      });
+      return res.status(400).json({ ok: false, error: "No notification recipients were supplied." });
     }
 
+    const lookup = await findTokens(db, recipientKeys);
+
     /*
-     * Save the notification first.
-     * This preserves the message even when a selected user has no
-     * registered push device.
-     */
-    const notificationRef = await db
-      .collection("notifications")
-      .add({
-        title,
-        message,
-        url,
-        recipientKeys,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        createdBy: clean(body.createdBy || "Admin")
-      });
+      Save the notification after lookup diagnostics are known.
+      This also stores useful delivery information for troubleshooting.
+    */
+    const notificationRef = await db.collection("notifications").add({
+      title,
+      message,
+      url,
+      recipientKeys,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdBy: clean(body.createdBy || "Admin"),
+      pushLookup: {
+        registeredDevices: lookup.tokens.length,
+        scannedDevices: lookup.scannedDevices,
+        enabledDevices: lookup.enabledDevices
+      }
+    });
 
-    const tokens = await findTokens(db, recipientKeys);
-
-    if (!tokens.length) {
+    if (!lookup.tokens.length) {
       return res.status(200).json({
         ok: true,
         notificationId: notificationRef.id,
+        projectId: clean(app.options?.credential?.projectId) ||
+                   clean(process.env.FIREBASE_PROJECT_ID) ||
+                   clean(readServiceAccount().project_id),
         registeredDevices: 0,
         sent: 0,
         failed: 0,
         warning:
           "Message saved, but none of the selected staff have a registered push-notification device.",
         debug: {
-          recipientKeys
+          recipientKeysReceived: recipientKeys,
+          recipientKeysExpanded: lookup.expandedKeys,
+          pushTokenDocumentsFound: lookup.scannedDevices,
+          enabledPushTokenDocuments: lookup.enabledDevices
         }
       });
     }
 
     let sent = 0;
     let failed = 0;
-
     const invalidTokens = [];
     const errors = [];
 
-    /*
-     * FCM multicast supports up to 500 registration tokens per call.
-     */
-    for (const tokenChunk of splitIntoChunks(tokens, 500)) {
+    for (const tokenChunk of splitIntoChunks(lookup.tokens, 500)) {
       const response = await messaging.sendEachForMulticast({
         tokens: tokenChunk,
-
         notification: {
           title,
           body: message
         },
-
         data: {
           notificationId: String(notificationRef.id),
           title: String(title),
           body: String(message),
           url: String(url)
         },
-
         webpush: {
           fcmOptions: {
             link: url
@@ -313,17 +312,10 @@ module.exports = async function handler(req, res) {
       failed += response.failureCount;
 
       response.responses.forEach((item, index) => {
-        if (item.success) {
-          return;
-        }
+        if (item.success) return;
 
-        const code =
-          item.error?.code ||
-          "unknown";
-
-        const errorMessage =
-          item.error?.message ||
-          "FCM send failed";
+        const code = item.error?.code || "unknown";
+        const errorMessage = item.error?.message || "FCM send failed";
 
         if (
           code === "messaging/registration-token-not-registered" ||
@@ -341,19 +333,34 @@ module.exports = async function handler(req, res) {
     try {
       await removeInvalidTokens(db, invalidTokens);
     } catch (cleanupError) {
-      console.warn(
-        "Could not remove invalid FCM tokens:",
-        cleanupError
-      );
+      console.warn("Could not remove invalid FCM tokens:", cleanupError);
     }
+
+    await notificationRef.set({
+      pushDelivery: {
+        registeredDevices: lookup.tokens.length,
+        sent,
+        failed,
+        removedInvalidTokens: invalidTokens.length,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      }
+    }, { merge: true });
 
     return res.status(200).json({
       ok: true,
       notificationId: notificationRef.id,
-      registeredDevices: tokens.length,
+      projectId: clean(app.options?.credential?.projectId) ||
+                 clean(process.env.FIREBASE_PROJECT_ID) ||
+                 clean(readServiceAccount().project_id),
+      registeredDevices: lookup.tokens.length,
       sent,
       failed,
       removedInvalidTokens: invalidTokens.length,
+      matchedStaff: lookup.matches.map(x => ({
+        username: x.username,
+        rcno: x.rcno,
+        fullname: x.fullname
+      })),
       errors
     });
 
@@ -362,12 +369,8 @@ module.exports = async function handler(req, res) {
 
     return res.status(500).json({
       ok: false,
-      error:
-        error?.message ||
-        "Internal Server Error",
-      code:
-        error?.code ||
-        null
+      error: error?.message || "Internal Server Error",
+      code: error?.code || null
     });
   }
 };
