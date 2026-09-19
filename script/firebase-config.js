@@ -2,13 +2,15 @@
 // This app expects Firebase compat SDKs loaded by each HTML page.
 //
 // Example:
-// firebase.initializeApp({
-//   apiKey: "...",
-//   authDomain: "...",
-//   projectId: "...",
-//   storageBucket: "...",
-//   messagingSenderId: "...",
-//   appId: "..."
-// });
+firebase.initializeApp({
+  apiKey: "AIzaSyBJe4nvC4Q2p-lBSth8a4LOSkWIwW8Zs2g",
+  authDomain: "housekeeping-791a4.firebaseapp.com",
+  databaseURL: "https://housekeeping-791a4-default-rtdb.firebaseio.com",
+  projectId: "housekeeping-791a4",
+  storageBucket: "housekeeping-791a4.firebasestorage.app",
+  messagingSenderId: "451334815894",
+  appId: "1:451334815894:web:df851c38bd22b6094382b7",
+  measurementId: "G-2NQHXVSSRR"
+ });
 //
 // IMPORTANT: Do not put email/SMTP passwords in this browser file.
