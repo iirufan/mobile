@@ -6,13 +6,23 @@
 
 window.PORTAL_USERS = [
   {
-    username: "admin",
-    fullname: "System Admin",
-    rcno: "ADMIN001",
-    email: "",
-    contact: "",
-    password: "iirufan1",
-    role: "admin",
-    active: true
+    "username": "admin",
+    "fullname": "System Admin",
+    "rcno": "ADMIN001",
+    "email": "",
+    "contact": "",
+    "password": "iirufan1",
+    "role": "admin",
+    "active": true
+  },
+  {
+    "username": "Irufan",
+    "fullname": "Abdulla Irufan",
+    "rcno": "979",
+    "email": "iirufan@gmail.com",
+    "contact": "7781019",
+    "password": "iirufan1",
+    "role": "supervisor",
+    "active": true
   }
 ];
