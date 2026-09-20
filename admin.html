@@ -6,14 +6,476 @@
 <title>Koveli | Admin</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#073541">
-<link rel="stylesheet" href="css/app.css?v=12">
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script>
-<script src="script/firebase-config.js"></script>
-<script src="script/pwa-config.js?v=8"></script>
-<script src="script/user.js?v=8"></script>
-<script src="script/app.js?v=10"></script>
+<link rel="stylesheet" href="css/app.css?v=14">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js">
+async function loadAdminSettings(){
+  const settings=await getPortalSettings();
+  dutyTimeChips.innerHTML=settings.dutyTimes.map(v=>`<span class="setting-chip">${esc(dutyLabel(v))}<button type="button" onclick="removeDutyTime('${esc(v)}')" aria-label="Remove">×</button></span>`).join("");
+}
+async function saveDutyTimes(times){
+  const cleaned=[...new Set(times.map(v=>clean(v).replace(":","")).filter(v=>/^\d{4}$/.test(v)))].sort();
+  if(!cleaned.length) throw new Error("At least one duty time is required.");
+  await DB().collection("portalSettings").doc("main").set({dutyTimes:cleaned,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+  await loadAdminSettings();
+}
+async function addDutyTime(){
+  try{
+    if(!newDutyTime.value)throw new Error("Select a duty time.");
+    const settings=await getPortalSettings();
+    await saveDutyTimes([...settings.dutyTimes,newDutyTime.value]);
+    newDutyTime.value="";msg(settingsMsg,"Duty time added.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function removeDutyTime(v){
+  try{
+    const settings=await getPortalSettings();
+    await saveDutyTimes(settings.dutyTimes.filter(x=>clean(x)!==clean(v)));
+    msg(settingsMsg,"Duty time removed.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function loadBalanceAdmin(){
+  const users=getUsers().filter(x=>x.active!==false);
+  const snap=await DB().collection("leaveBalances").get();
+  const map={};snap.forEach(d=>map[d.id]=d.data()||{});
+  balanceRows.innerHTML=users.map(u=>{
+    const b=map[lower(u.username)]||{};
+    return `<tr><td><b>${esc(u.fullname)}</b><br><small>${esc(u.rcno)}</small></td>
+      <td><input class="balance-input" id="sl_${esc(u.username)}" type="number" step="1" value="${Number(b.sl||0)}"></td>
+      <td><input class="balance-input" id="frl_${esc(u.username)}" type="number" step="1" value="${Number(b.frl||0)}"></td>
+      <td><button type="button" onclick="saveBalance('${esc(u.username)}')">Save</button></td></tr>`;
+  }).join("");
+}
+async function saveBalance(username){
+  try{
+    const u=getUsers().find(x=>lower(x.username)===lower(username));if(!u)throw new Error("Staff not found.");
+    const sl=Number(document.getElementById("sl_"+username).value||0);
+    const frl=Number(document.getElementById("frl_"+username).value||0);
+    await DB().collection("leaveBalances").doc(lower(username)).set({username:u.username,fullname:u.fullname,rcno:u.rcno,sl,frl,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+    msg(balanceMsg,`${u.fullname}'s balance updated.`,"ok");
+  }catch(e){msg(balanceMsg,e.message||String(e),"error")}
+}
+async function deleteCollection(name){
+  while(true){
+    const snap=await DB().collection(name).limit(400).get();
+    if(snap.empty)break;
+    const batch=DB().batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();
+    if(snap.size<400)break;
+  }
+}
+async function resetSubmittedRequests(){
+  if(!confirm("Delete ALL submitted Leave Applications and Duty Changes? This cannot be undone."))return;
+  if(!confirm("Confirm again: reset Leave and Duty Change submissions to 0?"))return;
+  try{
+    await deleteCollection("leaveApplications");
+    await deleteCollection("dutyChanges");
+    await loadAll();
+    msg(resetMsg,"All submitted Leave Applications and Duty Changes were deleted. Counts are now 0.","ok");
+  }catch(e){msg(resetMsg,e.message||String(e),"error")}
+}
+
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js">
+async function loadAdminSettings(){
+  const settings=await getPortalSettings();
+  dutyTimeChips.innerHTML=settings.dutyTimes.map(v=>`<span class="setting-chip">${esc(dutyLabel(v))}<button type="button" onclick="removeDutyTime('${esc(v)}')" aria-label="Remove">×</button></span>`).join("");
+}
+async function saveDutyTimes(times){
+  const cleaned=[...new Set(times.map(v=>clean(v).replace(":","")).filter(v=>/^\d{4}$/.test(v)))].sort();
+  if(!cleaned.length) throw new Error("At least one duty time is required.");
+  await DB().collection("portalSettings").doc("main").set({dutyTimes:cleaned,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+  await loadAdminSettings();
+}
+async function addDutyTime(){
+  try{
+    if(!newDutyTime.value)throw new Error("Select a duty time.");
+    const settings=await getPortalSettings();
+    await saveDutyTimes([...settings.dutyTimes,newDutyTime.value]);
+    newDutyTime.value="";msg(settingsMsg,"Duty time added.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function removeDutyTime(v){
+  try{
+    const settings=await getPortalSettings();
+    await saveDutyTimes(settings.dutyTimes.filter(x=>clean(x)!==clean(v)));
+    msg(settingsMsg,"Duty time removed.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function loadBalanceAdmin(){
+  const users=getUsers().filter(x=>x.active!==false);
+  const snap=await DB().collection("leaveBalances").get();
+  const map={};snap.forEach(d=>map[d.id]=d.data()||{});
+  balanceRows.innerHTML=users.map(u=>{
+    const b=map[lower(u.username)]||{};
+    return `<tr><td><b>${esc(u.fullname)}</b><br><small>${esc(u.rcno)}</small></td>
+      <td><input class="balance-input" id="sl_${esc(u.username)}" type="number" step="1" value="${Number(b.sl||0)}"></td>
+      <td><input class="balance-input" id="frl_${esc(u.username)}" type="number" step="1" value="${Number(b.frl||0)}"></td>
+      <td><button type="button" onclick="saveBalance('${esc(u.username)}')">Save</button></td></tr>`;
+  }).join("");
+}
+async function saveBalance(username){
+  try{
+    const u=getUsers().find(x=>lower(x.username)===lower(username));if(!u)throw new Error("Staff not found.");
+    const sl=Number(document.getElementById("sl_"+username).value||0);
+    const frl=Number(document.getElementById("frl_"+username).value||0);
+    await DB().collection("leaveBalances").doc(lower(username)).set({username:u.username,fullname:u.fullname,rcno:u.rcno,sl,frl,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+    msg(balanceMsg,`${u.fullname}'s balance updated.`,"ok");
+  }catch(e){msg(balanceMsg,e.message||String(e),"error")}
+}
+async function deleteCollection(name){
+  while(true){
+    const snap=await DB().collection(name).limit(400).get();
+    if(snap.empty)break;
+    const batch=DB().batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();
+    if(snap.size<400)break;
+  }
+}
+async function resetSubmittedRequests(){
+  if(!confirm("Delete ALL submitted Leave Applications and Duty Changes? This cannot be undone."))return;
+  if(!confirm("Confirm again: reset Leave and Duty Change submissions to 0?"))return;
+  try{
+    await deleteCollection("leaveApplications");
+    await deleteCollection("dutyChanges");
+    await loadAll();
+    msg(resetMsg,"All submitted Leave Applications and Duty Changes were deleted. Counts are now 0.","ok");
+  }catch(e){msg(resetMsg,e.message||String(e),"error")}
+}
+
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js">
+async function loadAdminSettings(){
+  const settings=await getPortalSettings();
+  dutyTimeChips.innerHTML=settings.dutyTimes.map(v=>`<span class="setting-chip">${esc(dutyLabel(v))}<button type="button" onclick="removeDutyTime('${esc(v)}')" aria-label="Remove">×</button></span>`).join("");
+}
+async function saveDutyTimes(times){
+  const cleaned=[...new Set(times.map(v=>clean(v).replace(":","")).filter(v=>/^\d{4}$/.test(v)))].sort();
+  if(!cleaned.length) throw new Error("At least one duty time is required.");
+  await DB().collection("portalSettings").doc("main").set({dutyTimes:cleaned,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+  await loadAdminSettings();
+}
+async function addDutyTime(){
+  try{
+    if(!newDutyTime.value)throw new Error("Select a duty time.");
+    const settings=await getPortalSettings();
+    await saveDutyTimes([...settings.dutyTimes,newDutyTime.value]);
+    newDutyTime.value="";msg(settingsMsg,"Duty time added.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function removeDutyTime(v){
+  try{
+    const settings=await getPortalSettings();
+    await saveDutyTimes(settings.dutyTimes.filter(x=>clean(x)!==clean(v)));
+    msg(settingsMsg,"Duty time removed.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function loadBalanceAdmin(){
+  const users=getUsers().filter(x=>x.active!==false);
+  const snap=await DB().collection("leaveBalances").get();
+  const map={};snap.forEach(d=>map[d.id]=d.data()||{});
+  balanceRows.innerHTML=users.map(u=>{
+    const b=map[lower(u.username)]||{};
+    return `<tr><td><b>${esc(u.fullname)}</b><br><small>${esc(u.rcno)}</small></td>
+      <td><input class="balance-input" id="sl_${esc(u.username)}" type="number" step="1" value="${Number(b.sl||0)}"></td>
+      <td><input class="balance-input" id="frl_${esc(u.username)}" type="number" step="1" value="${Number(b.frl||0)}"></td>
+      <td><button type="button" onclick="saveBalance('${esc(u.username)}')">Save</button></td></tr>`;
+  }).join("");
+}
+async function saveBalance(username){
+  try{
+    const u=getUsers().find(x=>lower(x.username)===lower(username));if(!u)throw new Error("Staff not found.");
+    const sl=Number(document.getElementById("sl_"+username).value||0);
+    const frl=Number(document.getElementById("frl_"+username).value||0);
+    await DB().collection("leaveBalances").doc(lower(username)).set({username:u.username,fullname:u.fullname,rcno:u.rcno,sl,frl,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+    msg(balanceMsg,`${u.fullname}'s balance updated.`,"ok");
+  }catch(e){msg(balanceMsg,e.message||String(e),"error")}
+}
+async function deleteCollection(name){
+  while(true){
+    const snap=await DB().collection(name).limit(400).get();
+    if(snap.empty)break;
+    const batch=DB().batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();
+    if(snap.size<400)break;
+  }
+}
+async function resetSubmittedRequests(){
+  if(!confirm("Delete ALL submitted Leave Applications and Duty Changes? This cannot be undone."))return;
+  if(!confirm("Confirm again: reset Leave and Duty Change submissions to 0?"))return;
+  try{
+    await deleteCollection("leaveApplications");
+    await deleteCollection("dutyChanges");
+    await loadAll();
+    msg(resetMsg,"All submitted Leave Applications and Duty Changes were deleted. Counts are now 0.","ok");
+  }catch(e){msg(resetMsg,e.message||String(e),"error")}
+}
+
+</script>
+<script src="script/firebase-config.js">
+async function loadAdminSettings(){
+  const settings=await getPortalSettings();
+  dutyTimeChips.innerHTML=settings.dutyTimes.map(v=>`<span class="setting-chip">${esc(dutyLabel(v))}<button type="button" onclick="removeDutyTime('${esc(v)}')" aria-label="Remove">×</button></span>`).join("");
+}
+async function saveDutyTimes(times){
+  const cleaned=[...new Set(times.map(v=>clean(v).replace(":","")).filter(v=>/^\d{4}$/.test(v)))].sort();
+  if(!cleaned.length) throw new Error("At least one duty time is required.");
+  await DB().collection("portalSettings").doc("main").set({dutyTimes:cleaned,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+  await loadAdminSettings();
+}
+async function addDutyTime(){
+  try{
+    if(!newDutyTime.value)throw new Error("Select a duty time.");
+    const settings=await getPortalSettings();
+    await saveDutyTimes([...settings.dutyTimes,newDutyTime.value]);
+    newDutyTime.value="";msg(settingsMsg,"Duty time added.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function removeDutyTime(v){
+  try{
+    const settings=await getPortalSettings();
+    await saveDutyTimes(settings.dutyTimes.filter(x=>clean(x)!==clean(v)));
+    msg(settingsMsg,"Duty time removed.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function loadBalanceAdmin(){
+  const users=getUsers().filter(x=>x.active!==false);
+  const snap=await DB().collection("leaveBalances").get();
+  const map={};snap.forEach(d=>map[d.id]=d.data()||{});
+  balanceRows.innerHTML=users.map(u=>{
+    const b=map[lower(u.username)]||{};
+    return `<tr><td><b>${esc(u.fullname)}</b><br><small>${esc(u.rcno)}</small></td>
+      <td><input class="balance-input" id="sl_${esc(u.username)}" type="number" step="1" value="${Number(b.sl||0)}"></td>
+      <td><input class="balance-input" id="frl_${esc(u.username)}" type="number" step="1" value="${Number(b.frl||0)}"></td>
+      <td><button type="button" onclick="saveBalance('${esc(u.username)}')">Save</button></td></tr>`;
+  }).join("");
+}
+async function saveBalance(username){
+  try{
+    const u=getUsers().find(x=>lower(x.username)===lower(username));if(!u)throw new Error("Staff not found.");
+    const sl=Number(document.getElementById("sl_"+username).value||0);
+    const frl=Number(document.getElementById("frl_"+username).value||0);
+    await DB().collection("leaveBalances").doc(lower(username)).set({username:u.username,fullname:u.fullname,rcno:u.rcno,sl,frl,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+    msg(balanceMsg,`${u.fullname}'s balance updated.`,"ok");
+  }catch(e){msg(balanceMsg,e.message||String(e),"error")}
+}
+async function deleteCollection(name){
+  while(true){
+    const snap=await DB().collection(name).limit(400).get();
+    if(snap.empty)break;
+    const batch=DB().batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();
+    if(snap.size<400)break;
+  }
+}
+async function resetSubmittedRequests(){
+  if(!confirm("Delete ALL submitted Leave Applications and Duty Changes? This cannot be undone."))return;
+  if(!confirm("Confirm again: reset Leave and Duty Change submissions to 0?"))return;
+  try{
+    await deleteCollection("leaveApplications");
+    await deleteCollection("dutyChanges");
+    await loadAll();
+    msg(resetMsg,"All submitted Leave Applications and Duty Changes were deleted. Counts are now 0.","ok");
+  }catch(e){msg(resetMsg,e.message||String(e),"error")}
+}
+
+</script>
+<script src="script/pwa-config.js?v=14">
+async function loadAdminSettings(){
+  const settings=await getPortalSettings();
+  dutyTimeChips.innerHTML=settings.dutyTimes.map(v=>`<span class="setting-chip">${esc(dutyLabel(v))}<button type="button" onclick="removeDutyTime('${esc(v)}')" aria-label="Remove">×</button></span>`).join("");
+}
+async function saveDutyTimes(times){
+  const cleaned=[...new Set(times.map(v=>clean(v).replace(":","")).filter(v=>/^\d{4}$/.test(v)))].sort();
+  if(!cleaned.length) throw new Error("At least one duty time is required.");
+  await DB().collection("portalSettings").doc("main").set({dutyTimes:cleaned,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+  await loadAdminSettings();
+}
+async function addDutyTime(){
+  try{
+    if(!newDutyTime.value)throw new Error("Select a duty time.");
+    const settings=await getPortalSettings();
+    await saveDutyTimes([...settings.dutyTimes,newDutyTime.value]);
+    newDutyTime.value="";msg(settingsMsg,"Duty time added.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function removeDutyTime(v){
+  try{
+    const settings=await getPortalSettings();
+    await saveDutyTimes(settings.dutyTimes.filter(x=>clean(x)!==clean(v)));
+    msg(settingsMsg,"Duty time removed.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function loadBalanceAdmin(){
+  const users=getUsers().filter(x=>x.active!==false);
+  const snap=await DB().collection("leaveBalances").get();
+  const map={};snap.forEach(d=>map[d.id]=d.data()||{});
+  balanceRows.innerHTML=users.map(u=>{
+    const b=map[lower(u.username)]||{};
+    return `<tr><td><b>${esc(u.fullname)}</b><br><small>${esc(u.rcno)}</small></td>
+      <td><input class="balance-input" id="sl_${esc(u.username)}" type="number" step="1" value="${Number(b.sl||0)}"></td>
+      <td><input class="balance-input" id="frl_${esc(u.username)}" type="number" step="1" value="${Number(b.frl||0)}"></td>
+      <td><button type="button" onclick="saveBalance('${esc(u.username)}')">Save</button></td></tr>`;
+  }).join("");
+}
+async function saveBalance(username){
+  try{
+    const u=getUsers().find(x=>lower(x.username)===lower(username));if(!u)throw new Error("Staff not found.");
+    const sl=Number(document.getElementById("sl_"+username).value||0);
+    const frl=Number(document.getElementById("frl_"+username).value||0);
+    await DB().collection("leaveBalances").doc(lower(username)).set({username:u.username,fullname:u.fullname,rcno:u.rcno,sl,frl,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+    msg(balanceMsg,`${u.fullname}'s balance updated.`,"ok");
+  }catch(e){msg(balanceMsg,e.message||String(e),"error")}
+}
+async function deleteCollection(name){
+  while(true){
+    const snap=await DB().collection(name).limit(400).get();
+    if(snap.empty)break;
+    const batch=DB().batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();
+    if(snap.size<400)break;
+  }
+}
+async function resetSubmittedRequests(){
+  if(!confirm("Delete ALL submitted Leave Applications and Duty Changes? This cannot be undone."))return;
+  if(!confirm("Confirm again: reset Leave and Duty Change submissions to 0?"))return;
+  try{
+    await deleteCollection("leaveApplications");
+    await deleteCollection("dutyChanges");
+    await loadAll();
+    msg(resetMsg,"All submitted Leave Applications and Duty Changes were deleted. Counts are now 0.","ok");
+  }catch(e){msg(resetMsg,e.message||String(e),"error")}
+}
+
+</script>
+<script src="script/user.js?v=8">
+async function loadAdminSettings(){
+  const settings=await getPortalSettings();
+  dutyTimeChips.innerHTML=settings.dutyTimes.map(v=>`<span class="setting-chip">${esc(dutyLabel(v))}<button type="button" onclick="removeDutyTime('${esc(v)}')" aria-label="Remove">×</button></span>`).join("");
+}
+async function saveDutyTimes(times){
+  const cleaned=[...new Set(times.map(v=>clean(v).replace(":","")).filter(v=>/^\d{4}$/.test(v)))].sort();
+  if(!cleaned.length) throw new Error("At least one duty time is required.");
+  await DB().collection("portalSettings").doc("main").set({dutyTimes:cleaned,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+  await loadAdminSettings();
+}
+async function addDutyTime(){
+  try{
+    if(!newDutyTime.value)throw new Error("Select a duty time.");
+    const settings=await getPortalSettings();
+    await saveDutyTimes([...settings.dutyTimes,newDutyTime.value]);
+    newDutyTime.value="";msg(settingsMsg,"Duty time added.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function removeDutyTime(v){
+  try{
+    const settings=await getPortalSettings();
+    await saveDutyTimes(settings.dutyTimes.filter(x=>clean(x)!==clean(v)));
+    msg(settingsMsg,"Duty time removed.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function loadBalanceAdmin(){
+  const users=getUsers().filter(x=>x.active!==false);
+  const snap=await DB().collection("leaveBalances").get();
+  const map={};snap.forEach(d=>map[d.id]=d.data()||{});
+  balanceRows.innerHTML=users.map(u=>{
+    const b=map[lower(u.username)]||{};
+    return `<tr><td><b>${esc(u.fullname)}</b><br><small>${esc(u.rcno)}</small></td>
+      <td><input class="balance-input" id="sl_${esc(u.username)}" type="number" step="1" value="${Number(b.sl||0)}"></td>
+      <td><input class="balance-input" id="frl_${esc(u.username)}" type="number" step="1" value="${Number(b.frl||0)}"></td>
+      <td><button type="button" onclick="saveBalance('${esc(u.username)}')">Save</button></td></tr>`;
+  }).join("");
+}
+async function saveBalance(username){
+  try{
+    const u=getUsers().find(x=>lower(x.username)===lower(username));if(!u)throw new Error("Staff not found.");
+    const sl=Number(document.getElementById("sl_"+username).value||0);
+    const frl=Number(document.getElementById("frl_"+username).value||0);
+    await DB().collection("leaveBalances").doc(lower(username)).set({username:u.username,fullname:u.fullname,rcno:u.rcno,sl,frl,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+    msg(balanceMsg,`${u.fullname}'s balance updated.`,"ok");
+  }catch(e){msg(balanceMsg,e.message||String(e),"error")}
+}
+async function deleteCollection(name){
+  while(true){
+    const snap=await DB().collection(name).limit(400).get();
+    if(snap.empty)break;
+    const batch=DB().batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();
+    if(snap.size<400)break;
+  }
+}
+async function resetSubmittedRequests(){
+  if(!confirm("Delete ALL submitted Leave Applications and Duty Changes? This cannot be undone."))return;
+  if(!confirm("Confirm again: reset Leave and Duty Change submissions to 0?"))return;
+  try{
+    await deleteCollection("leaveApplications");
+    await deleteCollection("dutyChanges");
+    await loadAll();
+    msg(resetMsg,"All submitted Leave Applications and Duty Changes were deleted. Counts are now 0.","ok");
+  }catch(e){msg(resetMsg,e.message||String(e),"error")}
+}
+
+</script>
+<script src="script/app.js?v=14">
+async function loadAdminSettings(){
+  const settings=await getPortalSettings();
+  dutyTimeChips.innerHTML=settings.dutyTimes.map(v=>`<span class="setting-chip">${esc(dutyLabel(v))}<button type="button" onclick="removeDutyTime('${esc(v)}')" aria-label="Remove">×</button></span>`).join("");
+}
+async function saveDutyTimes(times){
+  const cleaned=[...new Set(times.map(v=>clean(v).replace(":","")).filter(v=>/^\d{4}$/.test(v)))].sort();
+  if(!cleaned.length) throw new Error("At least one duty time is required.");
+  await DB().collection("portalSettings").doc("main").set({dutyTimes:cleaned,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+  await loadAdminSettings();
+}
+async function addDutyTime(){
+  try{
+    if(!newDutyTime.value)throw new Error("Select a duty time.");
+    const settings=await getPortalSettings();
+    await saveDutyTimes([...settings.dutyTimes,newDutyTime.value]);
+    newDutyTime.value="";msg(settingsMsg,"Duty time added.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function removeDutyTime(v){
+  try{
+    const settings=await getPortalSettings();
+    await saveDutyTimes(settings.dutyTimes.filter(x=>clean(x)!==clean(v)));
+    msg(settingsMsg,"Duty time removed.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function loadBalanceAdmin(){
+  const users=getUsers().filter(x=>x.active!==false);
+  const snap=await DB().collection("leaveBalances").get();
+  const map={};snap.forEach(d=>map[d.id]=d.data()||{});
+  balanceRows.innerHTML=users.map(u=>{
+    const b=map[lower(u.username)]||{};
+    return `<tr><td><b>${esc(u.fullname)}</b><br><small>${esc(u.rcno)}</small></td>
+      <td><input class="balance-input" id="sl_${esc(u.username)}" type="number" step="1" value="${Number(b.sl||0)}"></td>
+      <td><input class="balance-input" id="frl_${esc(u.username)}" type="number" step="1" value="${Number(b.frl||0)}"></td>
+      <td><button type="button" onclick="saveBalance('${esc(u.username)}')">Save</button></td></tr>`;
+  }).join("");
+}
+async function saveBalance(username){
+  try{
+    const u=getUsers().find(x=>lower(x.username)===lower(username));if(!u)throw new Error("Staff not found.");
+    const sl=Number(document.getElementById("sl_"+username).value||0);
+    const frl=Number(document.getElementById("frl_"+username).value||0);
+    await DB().collection("leaveBalances").doc(lower(username)).set({username:u.username,fullname:u.fullname,rcno:u.rcno,sl,frl,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+    msg(balanceMsg,`${u.fullname}'s balance updated.`,"ok");
+  }catch(e){msg(balanceMsg,e.message||String(e),"error")}
+}
+async function deleteCollection(name){
+  while(true){
+    const snap=await DB().collection(name).limit(400).get();
+    if(snap.empty)break;
+    const batch=DB().batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();
+    if(snap.size<400)break;
+  }
+}
+async function resetSubmittedRequests(){
+  if(!confirm("Delete ALL submitted Leave Applications and Duty Changes? This cannot be undone."))return;
+  if(!confirm("Confirm again: reset Leave and Duty Change submissions to 0?"))return;
+  try{
+    await deleteCollection("leaveApplications");
+    await deleteCollection("dutyChanges");
+    await loadAll();
+    msg(resetMsg,"All submitted Leave Applications and Duty Changes were deleted. Counts are now 0.","ok");
+  }catch(e){msg(resetMsg,e.message||String(e),"error")}
+}
+
+</script>
 </head>
 <body>
 <div id="n"></div>
@@ -68,6 +530,26 @@
 <tbody id="duties"></tbody>
 </table>
 </div>
+</section>
+
+
+<section class="card">
+<div class="section-head"><div><h2>Duty Time Settings</h2><p class="muted">These times appear in Leave and Duty Change dropdowns.</p></div></div>
+<div id="settingsMsg"></div>
+<div class="inline-setting"><input id="newDutyTime" type="time"><button type="button" onclick="addDutyTime()">Add Duty Time</button></div>
+<div id="dutyTimeChips" class="setting-chips"></div>
+</section>
+
+<section class="card">
+<div class="section-head"><div><h2>SL / FRL Balances</h2><p class="muted">Set each staff member's current leave balance. Applications are allowed even at 0 and will continue into negative values.</p></div></div>
+<div id="balanceMsg"></div>
+<div class="scroll"><table class="mobile-table"><thead><tr><th>Staff</th><th>SL Balance</th><th>FRL Balance</th><th>Action</th></tr></thead><tbody id="balanceRows"></tbody></table></div>
+</section>
+
+<section class="card danger-zone">
+<div class="section-head"><div><h2>Reset Submitted Requests</h2><p class="muted">Delete all submitted Leave Applications and Duty Changes and reset their counts to 0. Leave balances are not changed.</p></div></div>
+<div id="resetMsg"></div>
+<div class="actions"><button class="danger" type="button" onclick="resetSubmittedRequests()">Delete All Leave & Duty Changes</button></div>
 </section>
 
 <section class="card">
@@ -144,6 +626,8 @@ if (s) {
   n.innerHTML = nav("admin");
   loadAll();
   setupMessaging();
+  loadAdminSettings();
+  loadBalanceAdmin();
 }
 
 let regDocs = [];
@@ -470,6 +954,72 @@ async function sendStaffMessage() {
     button.textContent = "Send Notification";
   }
 }
+
+async function loadAdminSettings(){
+  const settings=await getPortalSettings();
+  dutyTimeChips.innerHTML=settings.dutyTimes.map(v=>`<span class="setting-chip">${esc(dutyLabel(v))}<button type="button" onclick="removeDutyTime('${esc(v)}')" aria-label="Remove">×</button></span>`).join("");
+}
+async function saveDutyTimes(times){
+  const cleaned=[...new Set(times.map(v=>clean(v).replace(":","")).filter(v=>/^\d{4}$/.test(v)))].sort();
+  if(!cleaned.length) throw new Error("At least one duty time is required.");
+  await DB().collection("portalSettings").doc("main").set({dutyTimes:cleaned,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+  await loadAdminSettings();
+}
+async function addDutyTime(){
+  try{
+    if(!newDutyTime.value)throw new Error("Select a duty time.");
+    const settings=await getPortalSettings();
+    await saveDutyTimes([...settings.dutyTimes,newDutyTime.value]);
+    newDutyTime.value="";msg(settingsMsg,"Duty time added.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function removeDutyTime(v){
+  try{
+    const settings=await getPortalSettings();
+    await saveDutyTimes(settings.dutyTimes.filter(x=>clean(x)!==clean(v)));
+    msg(settingsMsg,"Duty time removed.","ok");
+  }catch(e){msg(settingsMsg,e.message||String(e),"error")}
+}
+async function loadBalanceAdmin(){
+  const users=getUsers().filter(x=>x.active!==false);
+  const snap=await DB().collection("leaveBalances").get();
+  const map={};snap.forEach(d=>map[d.id]=d.data()||{});
+  balanceRows.innerHTML=users.map(u=>{
+    const b=map[lower(u.username)]||{};
+    return `<tr><td><b>${esc(u.fullname)}</b><br><small>${esc(u.rcno)}</small></td>
+      <td><input class="balance-input" id="sl_${esc(u.username)}" type="number" step="1" value="${Number(b.sl||0)}"></td>
+      <td><input class="balance-input" id="frl_${esc(u.username)}" type="number" step="1" value="${Number(b.frl||0)}"></td>
+      <td><button type="button" onclick="saveBalance('${esc(u.username)}')">Save</button></td></tr>`;
+  }).join("");
+}
+async function saveBalance(username){
+  try{
+    const u=getUsers().find(x=>lower(x.username)===lower(username));if(!u)throw new Error("Staff not found.");
+    const sl=Number(document.getElementById("sl_"+username).value||0);
+    const frl=Number(document.getElementById("frl_"+username).value||0);
+    await DB().collection("leaveBalances").doc(lower(username)).set({username:u.username,fullname:u.fullname,rcno:u.rcno,sl,frl,updatedBy:s.username,updatedAt:stamp()},{merge:true});
+    msg(balanceMsg,`${u.fullname}'s balance updated.`,"ok");
+  }catch(e){msg(balanceMsg,e.message||String(e),"error")}
+}
+async function deleteCollection(name){
+  while(true){
+    const snap=await DB().collection(name).limit(400).get();
+    if(snap.empty)break;
+    const batch=DB().batch();snap.forEach(d=>batch.delete(d.ref));await batch.commit();
+    if(snap.size<400)break;
+  }
+}
+async function resetSubmittedRequests(){
+  if(!confirm("Delete ALL submitted Leave Applications and Duty Changes? This cannot be undone."))return;
+  if(!confirm("Confirm again: reset Leave and Duty Change submissions to 0?"))return;
+  try{
+    await deleteCollection("leaveApplications");
+    await deleteCollection("dutyChanges");
+    await loadAll();
+    msg(resetMsg,"All submitted Leave Applications and Duty Changes were deleted. Counts are now 0.","ok");
+  }catch(e){msg(resetMsg,e.message||String(e),"error")}
+}
+
 </script>
 </body>
 </html>
