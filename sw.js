@@ -1,4 +1,4 @@
-const VERSION = "koveli-shell-v14";
+const VERSION = "koveli-shell-v15";
 const CORE = [
   "/index.html","/dashboard.html","/leave.html","/dutychange.html",
   "/security.html","/notifications.html","/css/app.css",
