@@ -110,8 +110,15 @@ async function enablePushNotifications(){
 }
 async function unreadNotificationCount(){
   const s=session(); if(!s)return 0;
-  const snap=await DB().collection("notifications").where("recipientKeys","array-contains",notifKey(s)).get();
-  let n=0;snap.forEach(d=>{const x=d.data();if(!(x.readBy||[]).includes(notifKey(s)))n++});return n;
+  const keys=[notifKey(s),lower(s.username),clean(s.rcno)].filter(Boolean);
+  const seen=new Map();
+  for(const key of keys){
+    const snap=await DB().collection("notifications").where("recipientKeys","array-contains",key).get();
+    snap.forEach(d=>seen.set(d.id,{id:d.id,...d.data()}));
+  }
+  let n=0;
+  seen.forEach(x=>{if(!(x.readBy||[]).includes(notifKey(s)))n++});
+  return n;
 }
 async function refreshNotificationBadge(){
   try{
