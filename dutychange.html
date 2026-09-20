@@ -1,8 +1,8 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><title>Koveli | Duty Change</title><link rel="stylesheet" href="css/app.css?v=13">
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=7"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=13"></script></head><body><div id="n"></div><main class="shell"><div class="grid">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><title>Koveli | Duty Change</title><link rel="stylesheet" href="css/app.css?v=14">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=14"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=14"></script></head><body><div id="n"></div><main class="shell"><div class="grid">
 <section class="card"><h1>Duty Change Request</h1><div id="m"></div>
-<form id="f"><div class="formgrid"><div><label>Your Name</label><input id="fullname" readonly></div><div><label>RC No.</label><input id="rcno" readonly></div><div><label>Change Date</label><input id="changeDate" type="date" required></div><div><label>Your Current Duty</label><input id="currentDuty" type="time" required></div>
-<div><label>Change With Staff</label><select id="withStaff" required></select></div><div><label>Requested Duty</label><input id="requestedDuty" type="time" required></div><div class="full"><label>Reason</label><textarea id="reason" required></textarea></div></div><div class="actions"><button>Submit Duty Change</button></div></form></section>
+<form id="f"><div class="formgrid"><div><label>Your Name</label><input id="fullname" readonly></div><div><label>RC No.</label><input id="rcno" readonly></div><div><label>Change Date</label><input id="changeDate" type="date" required></div><div><label>Your Current Duty</label><select id="currentDuty" required></select></div>
+<div><label>Change With Staff</label><select id="withStaff" required></select></div><div><label>Requested Duty</label><select id="requestedDuty" required></select></div><div class="full"><label>Reason</label><textarea id="reason" required></textarea></div></div><div class="actions"><button>Submit Duty Change</button></div></form></section>
 
 <section class="card" id="incomingCard"><h2>Duty Changes Waiting for My Acceptance</h2><p class="muted">Requests from other staff that selected you for the duty change.</p><div id="incomingMsg"></div><div class="scroll"><table><thead><tr><th>Staff</th><th>Date</th><th>Their Duty</th><th>Your Duty</th><th>Reason</th><th>Action</th></tr></thead><tbody id="incomingRows"></tbody></table></div></section>
 
@@ -13,7 +13,7 @@ const s=requireLogin();
 if(s){
   n.innerHTML=nav("duty");
   fullname.value=s.fullname;rcno.value=s.rcno;changeDate.min=today();
-  withStaff.innerHTML='<option value="">Select staff</option>'+getUsers().filter(x=>x.active!==false&&lower(x.username)!==lower(s.username)).map(x=>`<option value="${esc(x.username)}">${esc(x.fullname)} (${esc(x.rcno)})</option>`).join("");
+  fillDutySelect(currentDuty);fillDutySelect(requestedDuty);withStaff.innerHTML='<option value="">Select staff</option>'+getUsers().filter(x=>x.active!==false&&lower(x.username)!==lower(s.username)).map(x=>`<option value="${esc(x.username)}">${esc(x.fullname)} (${esc(x.rcno)})</option>`).join("");
   loadDutyChanges();
 }
 
