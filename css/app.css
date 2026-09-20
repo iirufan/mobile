@@ -346,3 +346,30 @@ body{
  .dashboard-hero{padding:20px 16px}.hero-mark{display:none}
  .duty-request{grid-template-columns:1fr}.duty-person,.duty-date,.duty-times,.duty-reason,.accept-duty-btn{grid-column:1}
 }
+
+/* ===== V13 CLEAN READABLE THEME ===== */
+.hero-mark,.quick-icon{display:none!important}
+.dashboard-hero{
+ min-height:auto!important;padding:24px!important;
+ background:linear-gradient(135deg,#075b61,#0a7777)!important;
+ border-radius:18px!important
+}
+.dashboard-hero h1{font-size:clamp(24px,4vw,34px)!important;letter-spacing:-.5px!important;line-height:1.15!important}
+.dashboard-hero .eyebrow{font-size:10px!important;letter-spacing:1.1px!important}
+.quick-card{
+ min-height:112px!important;padding:20px!important;display:block!important;
+ background:#fff!important;border:1px solid #dbe9e8!important
+}
+.quick-card h3{font-size:17px!important;margin:0 0 7px!important;color:#163f42!important}
+.quick-card p{font-size:13px!important;line-height:1.5!important}
+.card{border-radius:18px!important}
+h1,h2,h3{letter-spacing:0!important}
+h2{font-size:20px!important;line-height:1.25!important}
+p,.muted,td{line-height:1.5}
+@media(max-width:760px){
+ .dashboard-hero{padding:20px 17px!important}
+ .dashboard-hero h1{font-size:25px!important}
+ .quick-card{min-height:100px!important;padding:17px!important}
+ .quick-card h3{font-size:16px!important}
+ .section-head h2{font-size:18px!important}
+}
