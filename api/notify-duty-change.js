@@ -74,7 +74,15 @@ module.exports=async(req,res)=>{
           body:`${clean(d.fullname)} sent you a duty change request for ${clean(d.changeDate)}. Tap to review.`,
           url:"/dashboard.html"
         },
-        webpush:{headers:{Urgency:"high"}}
+        webpush:{
+          headers:{Urgency:"high"},
+          notification:{
+            title:"Duty Change Request",
+            body:`${clean(d.fullname)} sent you a duty change request for ${clean(d.changeDate)}. Tap to review.`,
+            icon:"/koveli-logo.png",badge:"/koveli-logo.png",tag:`duty-${requestId}`,renotify:true
+          },
+          fcmOptions:{link:"/dashboard.html"}
+        }
       });
       sent+=response.successCount; failed+=response.failureCount;
     }
