@@ -1,15 +1,20 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><title>Koveli | Dashboard</title><link rel="stylesheet" href="css/app.css?v=10">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0b5f63"><title>Koveli | Dashboard</title><link rel="stylesheet" href="css/app.css?v=12">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=7"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=10"></script></head><body><div id="n"></div><main class="shell"><div class="grid">
-<section class="card"><h1 id="hello">Dashboard</h1><p class="muted">Leave applications, duty changes and security requests.</p></section>
-<a class="card third" href="leave.html"><h3>Leave Application</h3><p class="muted">Submit leave with optional document.</p></a>
-<a class="card third" href="dutychange.html"><h3>Duty Change <span id="dutyBadge" class="notif-badge" style="display:none">0</span></h3><p class="muted" id="dutyCardText">Request a duty swap/change.</p></a>
-<a class="card third" href="security.html"><h3>Security</h3><p class="muted">Request a password change.</p></a>
+<section class="card dashboard-hero"><div><span class="eyebrow">KOVELI LOUNGE · STAFF PORTAL</span><h1 id="hello">Dashboard</h1><p class="muted">Manage your staff requests and approvals from one place.</p></div><div class="hero-mark">K</div></section>
 
-<section class="card" id="incomingDutyCard" style="display:none"><h2>Duty Changes Waiting for You</h2><p class="muted">Open Duty Change to review and accept.</p><div class="scroll"><table><thead><tr><th>Staff</th><th>Date</th><th>Current</th><th>Requested</th></tr></thead><tbody id="incomingDutyRows"></tbody></table></div><div class="actions"><a href="dutychange.html"><button type="button">Review Duty Changes</button></a></div></section>
+<a class="card third quick-card" href="leave.html"><span class="quick-icon">L</span><h3>Leave Application</h3><p class="muted">Submit leave with optional document.</p></a>
+<a class="card third quick-card" href="dutychange.html"><span class="quick-icon">⇄</span><h3>Duty Change <span id="dutyBadge" class="notif-badge" style="display:none">0</span></h3><p class="muted" id="dutyCardText">Request a duty swap/change.</p></a>
+<a class="card third quick-card" href="security.html"><span class="quick-icon">S</span><h3>Security</h3><p class="muted">Request a password change.</p></a>
 
-<section class="card"><h2>My Recent Requests</h2><div class="scroll"><table><thead><tr><th>Type</th><th>Date</th><th>Details</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+<section class="card incoming-panel" id="incomingDutyCard" style="display:none">
+<div class="section-head"><div><span class="eyebrow teal">ACTION REQUIRED</span><h2>Duty Changes Waiting for You</h2><p class="muted">Review the request and accept it directly from your dashboard.</p></div><span id="waitingCount" class="count-chip">0</span></div>
+<div id="incomingMsg"></div>
+<div class="duty-request-list" id="incomingDutyRows"></div>
+</section>
 
-<section class="card" id="supervisorDutyCard" style="display:none"><h2>Duty Change Overview</h2><p class="muted">All submitted duty changes and their acceptance/email status.</p><div class="scroll"><table><thead><tr><th>Requester</th><th>Date</th><th>Current</th><th>Change With</th><th>Requested</th><th>Status</th><th>Email</th></tr></thead><tbody id="supervisorDutyRows"></tbody></table></div></section>
+<section class="card"><div class="section-head"><div><h2>My Recent Requests</h2><p class="muted">Your latest leave and duty-change requests.</p></div></div><div class="scroll"><table><thead><tr><th>Type</th><th>Date</th><th>Details</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+
+<section class="card" id="supervisorDutyCard" style="display:none"><div class="section-head"><div><span class="eyebrow teal">SUPERVISOR VIEW</span><h2>Duty Change Overview</h2><p class="muted">All submitted duty changes, acceptance status and email status.</p></div></div><div class="scroll"><table><thead><tr><th>Requester</th><th>Date</th><th>Current</th><th>Change With</th><th>Requested</th><th>Status</th><th>Email</th></tr></thead><tbody id="supervisorDutyRows"></tbody></table></div></section>
 </div></main><script>
 const s=requireLogin();
 if(s){n.innerHTML=nav("dashboard");hello.textContent=`Welcome, ${s.fullname}`;load()}
@@ -21,23 +26,81 @@ async function load(){
     q.forEach(d=>all.push({type,...d.data()}))
   }
   all.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-  rows.innerHTML=all.slice(0,20).map(x=>`<tr><td>${esc(x.type)}</td><td>${esc(x.leaveDate||x.changeDate||"")}</td><td>${esc(x.reason||x.requestedDuty||"")}</td><td><span class="badge">${esc(x.status||"pending")}</span></td></tr>`).join("")||`<tr><td colspan="4">No requests yet.</td></tr>`;
+  rows.innerHTML=all.slice(0,20).map(x=>`<tr><td>${esc(x.type)}</td><td>${esc(x.leaveDate||x.changeDate||"")}</td><td>${esc(x.reason||x.requestedDuty||"")}</td><td><span class="badge status-${lower(x.status||"pending")}">${esc(x.status||"pending")}</span></td></tr>`).join("")||`<tr><td colspan="4">No requests yet.</td></tr>`;
 
   const incoming=await DB().collection("dutyChanges").where("withUsername","==",s.username).get();
-  const waiting=incoming.docs.map(d=>d.data()).filter(x=>lower(x.status)==="pending");
+  const waiting=incoming.docs.map(d=>({id:d.id,...d.data()})).filter(x=>lower(x.status)==="pending").sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
   if(waiting.length){
     incomingDutyCard.style.display="";
     dutyBadge.style.display="inline-grid";
     dutyBadge.textContent=waiting.length>99?"99+":waiting.length;
+    waitingCount.textContent=waiting.length;
     dutyCardText.textContent=`${waiting.length} duty change request${waiting.length===1?"":"s"} waiting for your acceptance.`;
-    incomingDutyRows.innerHTML=waiting.map(x=>`<tr><td>${esc(x.fullname)}</td><td>${esc(x.changeDate)}</td><td>${esc(x.currentDuty)}</td><td>${esc(x.requestedDuty)}</td></tr>`).join("");
+    incomingDutyRows.innerHTML=waiting.map(x=>`
+      <article class="duty-request">
+        <div class="duty-person"><strong>${esc(x.fullname)}</strong><span>RC ${esc(x.rcno)}</span></div>
+        <div class="duty-date"><span class="field-label">Change date</span><strong>${esc(x.changeDate)}</strong></div>
+        <div class="duty-times"><div><span class="field-label">Current duty</span><strong>${esc(x.currentDuty)}</strong></div><span class="swap-arrow">→</span><div><span class="field-label">Requested duty</span><strong>${esc(x.requestedDuty)}</strong></div></div>
+        <div class="duty-reason"><span class="field-label">Reason</span><span>${esc(x.reason||"-")}</span></div>
+        <button type="button" class="accept-duty-btn" onclick="acceptDutyChangeFromDashboard('${x.id}',this)">Accept Duty Change</button>
+      </article>`).join("");
+  }else{
+    incomingDutyCard.style.display="none";
+    dutyBadge.style.display="none";
   }
 
   if(["supervisor","admin"].includes(lower(s.role))){
     supervisorDutyCard.style.display="";
     const q=await DB().collection("dutyChanges").get();
     const list=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-    supervisorDutyRows.innerHTML=list.map(x=>`<tr><td><b>${esc(x.fullname)}</b><br>${esc(x.rcno)}</td><td>${esc(x.changeDate)}</td><td>${esc(x.currentDuty)}</td><td>${esc(x.withFullname)}<br>${esc(x.withRCNo)}</td><td>${esc(x.requestedDuty)}</td><td><span class="badge">${esc(x.status||"pending")}</span></td><td>${esc(x.emailStatus||"-")}</td></tr>`).join("")||'<tr><td colspan="7">No duty changes.</td></tr>';
+    supervisorDutyRows.innerHTML=list.map(x=>`<tr><td><b>${esc(x.fullname)}</b><br>${esc(x.rcno)}</td><td>${esc(x.changeDate)}</td><td>${esc(x.currentDuty)}</td><td>${esc(x.withFullname)}<br>${esc(x.withRCNo)}</td><td>${esc(x.requestedDuty)}</td><td><span class="badge status-${lower(x.status||"pending")}">${esc(x.status||"pending")}</span></td><td>${esc(x.emailStatus||"-")}</td></tr>`).join("")||'<tr><td colspan="7">No duty changes.</td></tr>';
+  }
+}
+
+async function acceptDutyChangeFromDashboard(id,btn){
+  try{
+    btn.disabled=true;btn.textContent="Accepting…";
+    const ref=DB().collection("dutyChanges").doc(id);
+    const snap=await ref.get();
+    if(!snap.exists) throw new Error("Duty change request was not found.");
+    const x=snap.data()||{};
+    if(lower(x.withUsername)!==lower(s.username)) throw new Error("This duty change request is not assigned to you.");
+    if(lower(x.status)!=="pending") throw new Error("This duty change request has already been processed.");
+
+    const acceptedAtText=new Date().toLocaleString();
+    await ref.update({
+      status:"accepted",acceptedBy:s.username,acceptedByFullname:s.fullname,acceptedByRCNo:s.rcno,
+      acceptedAt:stamp(),acceptedAtText,emailStatus:"sending"
+    });
+
+    await DB().collection("notifications").add({
+      title:"Duty Change Accepted",
+      message:`${s.fullname} accepted your duty change request for ${x.changeDate||""}.`,
+      url:"/dutychange.html",
+      recipientKeys:[lower(x.username),clean(x.rcno),notifKey({username:x.username,rcno:x.rcno})].filter(Boolean),
+      type:"duty_change_accepted",dutyChangeId:id,createdBy:s.username,createdAt:stamp(),readBy:[]
+    });
+
+    try{
+      const result=await api("/api/send-duty-change-email",{
+        requestId:id,username:x.username||"",fullname:x.fullname||"",rcno:x.rcno||"",
+        changeDate:x.changeDate||"",currentDuty:x.currentDuty||"",
+        withUsername:x.withUsername||s.username||"",withFullname:x.withFullname||s.fullname||"",
+        withRCNo:x.withRCNo||s.rcno||"",requestedDuty:x.requestedDuty||"",reason:x.reason||"",
+        acceptedBy:s.username||"",acceptedByFullname:s.fullname||"",acceptedByRCNo:s.rcno||"",
+        acceptedAtText
+      });
+      await ref.set({emailStatus:"sent"},{merge:true});
+      msg(incomingMsg,`Duty change accepted. Email sent to ${result.recipientCount||0} recipient(s).`,"ok");
+    }catch(mailError){
+      await ref.set({emailStatus:"failed",emailError:clean(mailError.message)},{merge:true});
+      msg(incomingMsg,`Duty change accepted, but email failed: ${mailError.message}`,"error");
+    }
+    await load();
+    await refreshNotificationBadge();
+  }catch(e){
+    msg(incomingMsg,e.message||String(e),"error");
+    btn.disabled=false;btn.textContent="Accept Duty Change";
   }
 }
 </script></body></html>
