@@ -1,8 +1,125 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><title>Koveli | Duty Change</title><link rel="stylesheet" href="css/app.css?v=7">
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=7"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=7"></script></head><body><div id="n"></div><main class="shell"><section class="card"><h1>Duty Change Request</h1><div id="m"></div>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><title>Koveli | Duty Change</title><link rel="stylesheet" href="css/app.css?v=10">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=7"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=10"></script></head><body><div id="n"></div><main class="shell"><div class="grid">
+<section class="card"><h1>Duty Change Request</h1><div id="m"></div>
 <form id="f"><div class="formgrid"><div><label>Your Name</label><input id="fullname" readonly></div><div><label>RC No.</label><input id="rcno" readonly></div><div><label>Change Date</label><input id="changeDate" type="date" required></div><div><label>Your Current Duty</label><input id="currentDuty" type="time" required></div>
-<div><label>Change With Staff</label><select id="withStaff" required></select></div><div><label>Requested Duty</label><input id="requestedDuty" type="time" required></div><div class="full"><label>Reason</label><textarea id="reason" required></textarea></div></div><div class="actions"><button>Submit Duty Change</button></div></form></section></main>
+<div><label>Change With Staff</label><select id="withStaff" required></select></div><div><label>Requested Duty</label><input id="requestedDuty" type="time" required></div><div class="full"><label>Reason</label><textarea id="reason" required></textarea></div></div><div class="actions"><button>Submit Duty Change</button></div></form></section>
+
+<section class="card" id="incomingCard"><h2>Duty Changes Waiting for My Acceptance</h2><p class="muted">Requests from other staff that selected you for the duty change.</p><div id="incomingMsg"></div><div class="scroll"><table><thead><tr><th>Staff</th><th>Date</th><th>Their Duty</th><th>Your Duty</th><th>Reason</th><th>Action</th></tr></thead><tbody id="incomingRows"></tbody></table></div></section>
+
+<section class="card"><h2>My Duty Change Requests</h2><div class="scroll"><table><thead><tr><th>Date</th><th>Change With</th><th>Current</th><th>Requested</th><th>Status</th></tr></thead><tbody id="myRows"></tbody></table></div></section>
+</div></main>
 <script>
-const s=requireLogin();if(s){n.innerHTML=nav("duty");fullname.value=s.fullname;rcno.value=s.rcno;changeDate.min=today();withStaff.innerHTML='<option value="">Select staff</option>'+getUsers().filter(x=>x.active!==false&&lower(x.username)!==lower(s.username)).map(x=>`<option value="${esc(x.username)}">${esc(x.fullname)} (${esc(x.rcno)})</option>`).join("")}
-f.onsubmit=async e=>{e.preventDefault();try{const target=getUsers().find(x=>x.username===withStaff.value);await DB().collection("dutyChanges").add({username:s.username,fullname:s.fullname,rcno:s.rcno,changeDate:changeDate.value,currentDuty:currentDuty.value,withUsername:target?.username||"",withFullname:target?.fullname||"",withRCNo:target?.rcno||"",requestedDuty:requestedDuty.value,reason:reason.value,status:"pending",createdAt:stamp()});f.reset();fullname.value=s.fullname;rcno.value=s.rcno;changeDate.min=today();msg(m,"Duty change request submitted.","ok")}catch(x){msg(m,x.message,"error")}}
+const s=requireLogin();
+if(s){
+  n.innerHTML=nav("duty");
+  fullname.value=s.fullname;rcno.value=s.rcno;changeDate.min=today();
+  withStaff.innerHTML='<option value="">Select staff</option>'+getUsers().filter(x=>x.active!==false&&lower(x.username)!==lower(s.username)).map(x=>`<option value="${esc(x.username)}">${esc(x.fullname)} (${esc(x.rcno)})</option>`).join("");
+  loadDutyChanges();
+}
+
+async function loadDutyChanges(){
+  const incoming=await DB().collection("dutyChanges").where("withUsername","==",s.username).get();
+  const incomingList=incoming.docs.map(d=>({id:d.id,...d.data()})).filter(x=>lower(x.status)==="pending").sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  incomingRows.innerHTML=incomingList.map(x=>`<tr><td><b>${esc(x.fullname)}</b><br>${esc(x.rcno)}</td><td>${esc(x.changeDate)}</td><td>${esc(x.currentDuty)}</td><td>${esc(x.requestedDuty)}</td><td>${esc(x.reason)}</td><td><button type="button" onclick="acceptDutyChange('${x.id}')">Accept</button></td></tr>`).join("")||'<tr><td colspan="6">No duty changes waiting for your acceptance.</td></tr>';
+
+  const mine=await DB().collection("dutyChanges").where("username","==",s.username).get();
+  const mineList=mine.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  myRows.innerHTML=mineList.map(x=>`<tr><td>${esc(x.changeDate)}</td><td>${esc(x.withFullname)}<br>${esc(x.withRCNo)}</td><td>${esc(x.currentDuty)}</td><td>${esc(x.requestedDuty)}</td><td><span class="badge">${esc(x.status||"pending")}</span>${x.emailStatus?`<br><small>Email: ${esc(x.emailStatus)}</small>`:""}</td></tr>`).join("")||'<tr><td colspan="5">No duty change requests yet.</td></tr>';
+}
+
+f.onsubmit=async e=>{
+  e.preventDefault();
+  try{
+    const target=getUsers().find(x=>lower(x.username)===lower(withStaff.value));
+    if(!target) throw new Error("Select the staff member changing duty with you.");
+    const ref=await DB().collection("dutyChanges").add({
+      username:s.username,fullname:s.fullname,rcno:s.rcno,
+      changeDate:changeDate.value,currentDuty:currentDuty.value,
+      withUsername:target.username,withFullname:target.fullname,withRCNo:target.rcno||"",
+      requestedDuty:requestedDuty.value,reason:reason.value,
+      status:"pending",acceptanceRequired:true,emailStatus:"waiting_for_acceptance",createdAt:stamp()
+    });
+
+    // Save an in-app notification for the selected staff member.
+    await DB().collection("notifications").add({
+      title:"Duty Change Request",
+      message:`${s.fullname} requested a duty change with you for ${changeDate.value}. Tap to review and accept.`,
+      url:"/dutychange.html",
+      recipientKeys:[lower(target.username),clean(target.rcno),notifKey(target)].filter(Boolean),
+      type:"duty_change_request",
+      dutyChangeId:ref.id,
+      createdBy:s.username,
+      createdAt:stamp(),
+      readBy:[]
+    });
+
+    // Send push immediately when that staff member has a registered device.
+    try{
+      const key=sessionStorage.getItem("koveli_push_admin_key") || localStorage.getItem("koveli_push_admin_key") || "";
+      if(key){
+        await fetch("/api/send-notification?v=3",{method:"POST",cache:"no-store",headers:{"Content-Type":"application/json","x-admin-key":key},body:JSON.stringify({
+          title:"Duty Change Request",
+          message:`${s.fullname} requested a duty change with you for ${changeDate.value}. Tap to review and accept.`,
+          url:"/dutychange.html",
+          recipientKeys:[lower(target.username),clean(target.rcno)].filter(Boolean),
+          createdBy:s.username
+        })});
+      }
+    }catch(pushError){console.warn("Duty change push:",pushError)}
+
+    f.reset();fullname.value=s.fullname;rcno.value=s.rcno;changeDate.min=today();
+    msg(m,"Duty change request submitted. The selected staff member can now accept it.","ok");
+    await loadDutyChanges();
+  }catch(x){msg(m,x.message,"error")}
+};
+
+async function acceptDutyChange(id){
+  const btn=event?.target;
+  try{
+    if(btn){btn.disabled=true;btn.textContent="Accepting..."}
+    const ref=DB().collection("dutyChanges").doc(id);
+    const snap=await ref.get();
+    if(!snap.exists) throw new Error("Duty change request was not found.");
+    const x=snap.data()||{};
+    if(lower(x.withUsername)!==lower(s.username)) throw new Error("This duty change request is not assigned to you.");
+    if(lower(x.status)!=="pending") throw new Error("This duty change request has already been processed.");
+
+    await ref.update({
+      status:"accepted",
+      acceptedBy:s.username,
+      acceptedByFullname:s.fullname,
+      acceptedByRCNo:s.rcno,
+      acceptedAt:stamp(),
+      acceptedAtText:new Date().toLocaleString(),
+      emailStatus:"sending"
+    });
+
+    // Notify the original requester in-app.
+    await DB().collection("notifications").add({
+      title:"Duty Change Accepted",
+      message:`${s.fullname} accepted your duty change request for ${x.changeDate||""}.`,
+      url:"/dutychange.html",
+      recipientKeys:[lower(x.username),clean(x.rcno),notifKey({username:x.username,rcno:x.rcno})].filter(Boolean),
+      type:"duty_change_accepted",
+      dutyChangeId:id,
+      createdBy:s.username,
+      createdAt:stamp(),
+      readBy:[]
+    });
+
+    // Email the preselected recipients configured in Vercel.
+    try{
+      const result=await api("/api/send-duty-change-email",{requestId:id});
+      msg(incomingMsg,`Duty change accepted. Email sent to ${result.recipientCount||0} configured recipient(s).`,"ok");
+    }catch(mailError){
+      await ref.set({emailStatus:"failed",emailError:clean(mailError.message)},{merge:true});
+      msg(incomingMsg,`Duty change accepted, but email failed: ${mailError.message}`,"error");
+    }
+
+    await loadDutyChanges();
+  }catch(e){
+    msg(incomingMsg,e.message||String(e),"error");
+    if(btn){btn.disabled=false;btn.textContent="Accept"}
+  }
+}
 </script></body></html>
