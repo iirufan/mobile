@@ -31,13 +31,10 @@ module.exports = async (req,res) => {
     const subject=`Leave Application - ${safe(b.fullname)} - ${safe(b.leaveDate)}`;
     const text=[
       "KOVELI STAFF - LEAVE APPLICATION","",
-      `Name: ${safe(b.fullname)}`,
-      `RC No: ${safe(b.rcno)}`,
-      `Username: ${safe(b.username)}`,
+      `Name: ${safe(b.fullname)} (${safe(b.rcno)})`,
       `Leave Date: ${safe(b.leaveDate)}`,
       `Duty Time: ${safe(b.dutyTime)}`,
-      `Reason: ${safe(b.reason)}`,
-      `Request ID: ${safe(b.requestId)}`
+      `Reason: ${safe(b.reason)}`
     ].join("\n");
 
     const jobs=[];
