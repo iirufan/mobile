@@ -28,22 +28,11 @@ module.exports = async (req,res) => {
 
     const text=[
       "KOVELI STAFF - DUTY CHANGE ACCEPTED","",
-      "REQUESTING STAFF",
-      `Name: ${safe(b.fullname)}`,
-      `RC No: ${safe(b.rcno)}`,
-      `Username: ${safe(b.username)}`,"",
-      `Change Date: ${safe(b.changeDate)}`,
-      `Current Duty: ${safe(b.currentDuty)}`,"",
-      "CHANGE WITH STAFF",
-      `Name: ${safe(b.withFullname)}`,
-      `RC No: ${safe(b.withRCNo)}`,
-      `Username: ${safe(b.withUsername)}`,"",
-      `Requested Duty: ${safe(b.requestedDuty)}`,"",
-      `Reason: ${safe(b.reason)}`,"",
-      `Accepted By: ${safe(b.acceptedByFullname)}`,
-      `Accepted By RC No: ${safe(b.acceptedByRCNo)}`,
-      `Accepted At: ${safe(b.acceptedAtText)}`,"",
-      `Request ID: ${safe(b.requestId)}`
+      `Date: ${safe(b.changeDate)}`,
+      `From: ${safe(b.fullname)} (${safe(b.rcno)}) - ${safe(b.currentDuty)}`,
+      `With: ${safe(b.withFullname)} (${safe(b.withRCNo)}) - ${safe(b.requestedDuty)}`,
+      `Reason: ${safe(b.reason)}`,
+      `Accepted by: ${safe(b.acceptedByFullname)}`
     ].join("\n");
 
     await transporter.sendMail({from,to:recipients.join(","),subject,text});
