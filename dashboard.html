@@ -1,12 +1,43 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><title>Koveli | Dashboard</title><link rel="stylesheet" href="css/app.css?v=7">
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=7"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=7"></script></head><body><div id="n"></div><main class="shell"><div class="grid">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><title>Koveli | Dashboard</title><link rel="stylesheet" href="css/app.css?v=10">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=7"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=10"></script></head><body><div id="n"></div><main class="shell"><div class="grid">
 <section class="card"><h1 id="hello">Dashboard</h1><p class="muted">Leave applications, duty changes and security requests.</p></section>
 <a class="card third" href="leave.html"><h3>Leave Application</h3><p class="muted">Submit leave with optional document.</p></a>
-<a class="card third" href="dutychange.html"><h3>Duty Change</h3><p class="muted">Request a duty swap/change.</p></a>
+<a class="card third" href="dutychange.html"><h3>Duty Change <span id="dutyBadge" class="notif-badge" style="display:none">0</span></h3><p class="muted" id="dutyCardText">Request a duty swap/change.</p></a>
 <a class="card third" href="security.html"><h3>Security</h3><p class="muted">Request a password change.</p></a>
+
+<section class="card" id="incomingDutyCard" style="display:none"><h2>Duty Changes Waiting for You</h2><p class="muted">Open Duty Change to review and accept.</p><div class="scroll"><table><thead><tr><th>Staff</th><th>Date</th><th>Current</th><th>Requested</th></tr></thead><tbody id="incomingDutyRows"></tbody></table></div><div class="actions"><a href="dutychange.html"><button type="button">Review Duty Changes</button></a></div></section>
+
 <section class="card"><h2>My Recent Requests</h2><div class="scroll"><table><thead><tr><th>Type</th><th>Date</th><th>Details</th><th>Status</th></tr></thead><tbody id="rows"></tbody></table></div></section>
+
+<section class="card" id="supervisorDutyCard" style="display:none"><h2>Duty Change Overview</h2><p class="muted">All submitted duty changes and their acceptance/email status.</p><div class="scroll"><table><thead><tr><th>Requester</th><th>Date</th><th>Current</th><th>Change With</th><th>Requested</th><th>Status</th><th>Email</th></tr></thead><tbody id="supervisorDutyRows"></tbody></table></div></section>
 </div></main><script>
-const s=requireLogin();if(s){n.innerHTML=nav("dashboard");hello.textContent=`Welcome, ${s.fullname}`;load()}
-async function load(){let all=[];for(const [col,type] of [["leaveApplications","Leave"],["dutyChanges","Duty Change"]]){const q=await DB().collection(col).where("username","==",s.username).get();q.forEach(d=>all.push({type,...d.data()}))}
-all.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));rows.innerHTML=all.slice(0,20).map(x=>`<tr><td>${esc(x.type)}</td><td>${esc(x.leaveDate||x.changeDate||"")}</td><td>${esc(x.reason||x.requestedDuty||"")}</td><td><span class="badge">${esc(x.status||"pending")}</span></td></tr>`).join("")||`<tr><td colspan="4">No requests yet.</td></tr>`}
+const s=requireLogin();
+if(s){n.innerHTML=nav("dashboard");hello.textContent=`Welcome, ${s.fullname}`;load()}
+
+async function load(){
+  let all=[];
+  for(const [col,type] of [["leaveApplications","Leave"],["dutyChanges","Duty Change"]]){
+    const q=await DB().collection(col).where("username","==",s.username).get();
+    q.forEach(d=>all.push({type,...d.data()}))
+  }
+  all.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  rows.innerHTML=all.slice(0,20).map(x=>`<tr><td>${esc(x.type)}</td><td>${esc(x.leaveDate||x.changeDate||"")}</td><td>${esc(x.reason||x.requestedDuty||"")}</td><td><span class="badge">${esc(x.status||"pending")}</span></td></tr>`).join("")||`<tr><td colspan="4">No requests yet.</td></tr>`;
+
+  const incoming=await DB().collection("dutyChanges").where("withUsername","==",s.username).get();
+  const waiting=incoming.docs.map(d=>d.data()).filter(x=>lower(x.status)==="pending");
+  if(waiting.length){
+    incomingDutyCard.style.display="";
+    dutyBadge.style.display="inline-grid";
+    dutyBadge.textContent=waiting.length>99?"99+":waiting.length;
+    dutyCardText.textContent=`${waiting.length} duty change request${waiting.length===1?"":"s"} waiting for your acceptance.`;
+    incomingDutyRows.innerHTML=waiting.map(x=>`<tr><td>${esc(x.fullname)}</td><td>${esc(x.changeDate)}</td><td>${esc(x.currentDuty)}</td><td>${esc(x.requestedDuty)}</td></tr>`).join("");
+  }
+
+  if(["supervisor","admin"].includes(lower(s.role))){
+    supervisorDutyCard.style.display="";
+    const q=await DB().collection("dutyChanges").get();
+    const list=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+    supervisorDutyRows.innerHTML=list.map(x=>`<tr><td><b>${esc(x.fullname)}</b><br>${esc(x.rcno)}</td><td>${esc(x.changeDate)}</td><td>${esc(x.currentDuty)}</td><td>${esc(x.withFullname)}<br>${esc(x.withRCNo)}</td><td>${esc(x.requestedDuty)}</td><td><span class="badge">${esc(x.status||"pending")}</span></td><td>${esc(x.emailStatus||"-")}</td></tr>`).join("")||'<tr><td colspan="7">No duty changes.</td></tr>';
+  }
+}
 </script></body></html>
