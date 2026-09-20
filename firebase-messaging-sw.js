@@ -17,10 +17,13 @@ const messaging = firebase.messaging();
  */
 
 messaging.onBackgroundMessage((payload) => {
-  console.log(
-    "[firebase-messaging-sw.js] Background notification:",
-    payload
-  );
+  console.log("[firebase-messaging-sw.js] Background notification:", payload);
+
+  // FCM automatically displays messages that already contain a Web Push
+  // notification payload. Only manually display data-only messages.
+  if (payload.notification && (payload.notification.title || payload.notification.body)) {
+    return;
+  }
 
   const data = payload.data || {};
   const notification = payload.notification || {};
