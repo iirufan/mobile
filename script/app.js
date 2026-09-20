@@ -66,6 +66,34 @@ async function api(path,payload){
  return d;
 }
 
+
+/* ================= PORTAL SETTINGS + LEAVE BALANCES ================= */
+async function getPortalSettings(){
+  const snap=await DB().collection("portalSettings").doc("main").get();
+  const d=snap.exists?snap.data():{};
+  const times=Array.isArray(d.dutyTimes)&&d.dutyTimes.length?d.dutyTimes:["0030","0730","0830","1530","1630"];
+  return {...d,dutyTimes:times};
+}
+function dutyLabel(v){
+  const s=clean(v).replace(":","");
+  if(!/^\d{4}$/.test(s)) return clean(v);
+  return `${s.slice(0,2)}:${s.slice(2)}`;
+}
+async function fillDutySelect(el,selected=""){
+  const settings=await getPortalSettings();
+  el.innerHTML='<option value="">Select duty time</option>'+settings.dutyTimes.map(v=>{
+    const val=clean(v).replace(":","");
+    return `<option value="${esc(val)}" ${val===clean(selected).replace(":","")?"selected":""}>${esc(dutyLabel(val))}</option>`;
+  }).join("");
+}
+async function getLeaveBalance(username=session()?.username){
+  const key=lower(username);
+  if(!key) return {sl:0,frl:0};
+  const snap=await DB().collection("leaveBalances").doc(key).get();
+  const d=snap.exists?snap.data():{};
+  return {sl:Number(d.sl||0),frl:Number(d.frl||0)};
+}
+
 /* ================= PWA + PUSH NOTIFICATIONS ================= */
 function pwaConfig(){return window.KOVELI_PWA_CONFIG||{}}
 function notifKey(s=session()){return s?`${lower(s.username)}_${clean(s.rcno)}`:""}
