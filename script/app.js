@@ -236,3 +236,29 @@ if("serviceWorker" in navigator){
 
   window.addEventListener("focus", checkForKoveliUpdate);
 }
+
+async function startForegroundPushListener(){
+  try{
+    if(!session() || !firebase.messaging || !("Notification" in window)) return;
+    if(Notification.permission!=="granted") return;
+    const messaging=firebase.messaging();
+    messaging.onMessage(payload=>{
+      const d=payload?.data||{};
+      const n=payload?.notification||{};
+      const title=d.title||n.title||"Koveli Lounge";
+      const body=d.body||n.body||"";
+      try{
+        const note=new Notification(title,{
+          body,
+          icon:"/koveli-logo.png",
+          badge:"/koveli-logo.png",
+          tag:d.notificationId||"koveli-live",
+          data:{url:d.url||"/notifications.html"}
+        });
+        note.onclick=()=>{ window.focus(); location.href=d.url||"/notifications.html"; note.close(); };
+      }catch(e){ console.warn("Foreground notification:",e); }
+      refreshNotificationBadge();
+    });
+  }catch(e){console.warn("Foreground push listener:",e)}
+}
+window.addEventListener("load",startForegroundPushListener);
