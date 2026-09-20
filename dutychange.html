@@ -1,5 +1,5 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><title>Koveli | Duty Change</title><link rel="stylesheet" href="css/app.css?v=12">
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=7"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=10"></script></head><body><div id="n"></div><main class="shell"><div class="grid">
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><title>Koveli | Duty Change</title><link rel="stylesheet" href="css/app.css?v=13">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=7"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=13"></script></head><body><div id="n"></div><main class="shell"><div class="grid">
 <section class="card"><h1>Duty Change Request</h1><div id="m"></div>
 <form id="f"><div class="formgrid"><div><label>Your Name</label><input id="fullname" readonly></div><div><label>RC No.</label><input id="rcno" readonly></div><div><label>Change Date</label><input id="changeDate" type="date" required></div><div><label>Your Current Duty</label><input id="currentDuty" type="time" required></div>
 <div><label>Change With Staff</label><select id="withStaff" required></select></div><div><label>Requested Duty</label><input id="requestedDuty" type="time" required></div><div class="full"><label>Reason</label><textarea id="reason" required></textarea></div></div><div class="actions"><button>Submit Duty Change</button></div></form></section>
@@ -55,15 +55,20 @@ f.onsubmit=async e=>{
 
     // Send a push notification to the selected staff member.
     // The server verifies the saved duty-change request before sending.
+    let pushMessage="";
     try{
       const pushResult=await api("/api/notify-duty-change",{requestId:ref.id});
-      console.log("Duty change push:",pushResult);
+      if(pushResult.sent>0){
+        pushMessage=" Phone notification sent.";
+      }else{
+        pushMessage=` Request saved, but phone notification was not sent. ${pushResult.warning||"The selected staff has no registered notification device."}`;
+      }
     }catch(pushError){
-      console.warn("Duty change push:",pushError);
+      pushMessage=` Request saved, but phone notification failed: ${pushError.message}`;
     }
 
     f.reset();fullname.value=s.fullname;rcno.value=s.rcno;changeDate.min=today();
-    msg(m,"Duty change request submitted. The selected staff member can now accept it.","ok");
+    msg(m,"Duty change request submitted."+pushMessage,pushMessage.includes("not sent")||pushMessage.includes("failed")?"error":"ok");
     await loadDutyChanges();
   }catch(x){msg(m,x.message,"error")}
 };
