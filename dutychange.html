@@ -109,7 +109,23 @@ async function acceptDutyChange(id){
 
     // Email the preselected recipients configured in Vercel.
     try{
-      const result=await api("/api/send-duty-change-email",{requestId:id});
+      const result=await api("/api/send-duty-change-email",{
+        requestId:id,
+        username:x.username||"",
+        fullname:x.fullname||"",
+        rcno:x.rcno||"",
+        changeDate:x.changeDate||"",
+        currentDuty:x.currentDuty||"",
+        withUsername:x.withUsername||s.username||"",
+        withFullname:x.withFullname||s.fullname||"",
+        withRCNo:x.withRCNo||s.rcno||"",
+        requestedDuty:x.requestedDuty||"",
+        reason:x.reason||"",
+        acceptedBy:s.username||"",
+        acceptedByFullname:s.fullname||"",
+        acceptedByRCNo:s.rcno||"",
+        acceptedAtText:new Date().toLocaleString()
+      });
       msg(incomingMsg,`Duty change accepted. Email sent to ${result.recipientCount||0} configured recipient(s).`,"ok");
     }catch(mailError){
       await ref.set({emailStatus:"failed",emailError:clean(mailError.message)},{merge:true});
