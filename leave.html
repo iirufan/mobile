@@ -1,19 +1,41 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#073541"><title>Koveli | Leave</title><link rel="stylesheet" href="css/app.css?v=12">
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=7"></script><script src="script/user.js?v=7"></script><script src="script/app.js?v=10"></script></head><body><div id="n"></div><main class="shell"><section class="card"><h1>Leave Application</h1><div id="m"></div>
-<form id="f"><div class="formgrid"><div><label>Full Name</label><input id="fullname" readonly></div><div><label>RC No.</label><input id="rcno" readonly></div><div><label>Leave Date</label><input id="leaveDate" type="date" required></div><div><label>Duty Time</label><input id="dutyTime" type="time" required></div>
-<div class="full"><label>Reason</label><select id="reason" required><option value="">Select reason</option><option>Sick Leave</option><option>Family Responsibility Leave (FRL)</option><option>Emergency</option><option>Personal</option><option>Other</option></select></div>
-<div class="full"><label>Document Attachment (optional, max 2.5 MB)</label><input id="attachment" type="file" accept=".pdf,.jpg,.jpeg,.png"></div></div><div class="actions"><button id="send">Send Application</button></div></form></section></main>
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#075b61"><title>Koveli | Leave</title><link rel="stylesheet" href="css/app.css?v=14">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js"></script><script src="script/firebase-config.js"></script><script src="script/pwa-config.js?v=14"></script><script src="script/user.js?v=8"></script><script src="script/app.js?v=14"></script></head><body><div id="n"></div><main class="shell"><div class="grid">
+<section class="card"><div class="section-head"><div><h1>Leave Application</h1><p class="muted">Submit SL, FRL or another leave request.</p></div></div><div id="m"></div>
+<div class="balance-grid"><div class="balance-card"><span>Sick Leave</span><strong id="slBalance">0</strong><small>SL balance</small></div><div class="balance-card"><span>Family Responsibility</span><strong id="frlBalance">0</strong><small>FRL balance</small></div></div>
+<form id="f"><div class="formgrid"><div><label>Full Name</label><input id="fullname" readonly></div><div><label>RC No.</label><input id="rcno" readonly></div><div><label>Leave Date</label><input id="leaveDate" type="date" required></div><div><label>Duty Time</label><select id="dutyTime" required></select></div>
+<div class="full"><label>Reason</label><select id="reason" required><option value="">Select reason</option><option>Sick Leave</option><option>Family Responsibility Leave (FRL)</option><option>Emergency</option><option>Personal</option><option>Other</option></select><small class="help">SL and FRL can still be submitted when the balance is 0. The balance will become negative.</small></div>
+<div class="full"><label>Document Attachment (optional, max 2.5 MB)</label><input id="attachment" type="file" accept=".pdf,.jpg,.jpeg,.png"></div></div><div class="actions"><button id="send">Send Application</button></div></form></section></div></main>
 <script>
-const s=requireLogin();if(s){n.innerHTML=nav("leave");fullname.value=s.fullname;rcno.value=s.rcno;leaveDate.min=today()}
+const s=requireLogin();
+if(s){n.innerHTML=nav("leave");fullname.value=s.fullname;rcno.value=s.rcno;leaveDate.min=today();initLeave()}
+async function initLeave(){await fillDutySelect(dutyTime);await refreshBalances()}
+async function refreshBalances(){const b=await getLeaveBalance(s.username);slBalance.textContent=b.sl;frlBalance.textContent=b.frl}
 function file64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(",")[1]);r.onerror=rej;r.readAsDataURL(file)})}
-f.onsubmit=async e=>{e.preventDefault();send.disabled=true;try{
- const file=attachment.files[0]; if(file&&file.size>2.5*1024*1024)throw new Error("Attachment must be 2.5 MB or smaller.");
- const doc={username:s.username,fullname:s.fullname,rcno:s.rcno,email:s.email||"",leaveDate:leaveDate.value,dutyTime:dutyTime.value,reason:reason.value,status:"pending",emailStatus:"queued",hasAttachment:!!file,attachmentName:file?.name||"",createdAt:stamp()};
- const ref=await DB().collection("leaveApplications").add(doc);
+function leaveType(v){if(v==="Sick Leave")return"sl";if(v==="Family Responsibility Leave (FRL)")return"frl";return""}
+
+f.onsubmit=async e=>{e.preventDefault();send.disabled=true;send.textContent="Sending…";try{
+ const file=attachment.files[0];if(file&&file.size>2.5*1024*1024)throw new Error("Attachment must be 2.5 MB or smaller.");
+ const type=leaveType(reason.value);
+ const doc={username:s.username,fullname:s.fullname,rcno:s.rcno,email:s.email||"",leaveDate:leaveDate.value,dutyTime:dutyTime.value,reason:reason.value,leaveType:type,status:"pending",emailStatus:"queued",hasAttachment:!!file,attachmentName:file?.name||"",createdAt:stamp()};
+
+ // Save request and deduct SL/FRL together. Zero balance is allowed and becomes negative.
+ const ref=DB().collection("leaveApplications").doc();
+ await DB().runTransaction(async tx=>{
+   if(type){
+     const balRef=DB().collection("leaveBalances").doc(lower(s.username));
+     const balSnap=await tx.get(balRef);
+     const current=balSnap.exists?Number(balSnap.data()?.[type]||0):0;
+     tx.set(balRef,{username:s.username,fullname:s.fullname,rcno:s.rcno,[type]:current-1,updatedAt:stamp()},{merge:true});
+     doc.balanceBefore=current;doc.balanceAfter=current-1;
+   }
+   tx.set(ref,doc);
+ });
+
  let attachmentData=null;if(file)attachmentData={name:file.name,type:file.type||"application/octet-stream",base64:await file64(file)};
- // Email is server-side. Firestore save remains successful even if email temporarily fails.
  try{await api("/api/send-leave-email",{requestId:ref.id,...doc,attachment:attachmentData});await ref.update({emailStatus:"sent",emailSentAt:stamp()})}
- catch(mailErr){await ref.update({emailStatus:"failed",emailError:clean(mailErr.message)});}
- f.reset();fullname.value=s.fullname;rcno.value=s.rcno;leaveDate.min=today();msg(m,"Leave application saved. Email delivery is handled separately from the saved request.","ok")
-}catch(x){msg(m,x.message,"error")}finally{send.disabled=false}}
+ catch(mailErr){await ref.update({emailStatus:"failed",emailError:clean(mailErr.message)})}
+
+ f.reset();fullname.value=s.fullname;rcno.value=s.rcno;leaveDate.min=today();await fillDutySelect(dutyTime);await refreshBalances();
+ msg(m,"Leave application submitted successfully.","ok");
+}catch(e){msg(m,e.message||String(e),"error")}finally{send.disabled=false;send.textContent="Send Application"}};
 </script></body></html>
