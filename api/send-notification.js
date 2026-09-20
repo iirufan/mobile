@@ -300,9 +300,16 @@ module.exports = async function handler(req, res) {
   },
 
   webpush: {
-    headers: {
-      Urgency: "high"
-    }
+    headers: { Urgency: "high" },
+    notification: {
+      title: String(title),
+      body: String(message),
+      icon: "/koveli-logo.png",
+      badge: "/koveli-logo.png",
+      tag: String(notificationRef.id),
+      renotify: true
+    },
+    fcmOptions: { link: String(url) }
   }
 });
 
