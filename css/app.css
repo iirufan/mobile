@@ -210,3 +210,89 @@ button,.btn{letter-spacing:.1px}
   .koveli-update-bar{bottom:82px;padding:12px 12px 12px 15px;border-radius:16px}
   .koveli-update-copy span{font-size:11px}
 }
+
+
+/* ===== MOBILE NAVBAR FIT FIX ===== */
+@media(max-width:760px){
+  /* Reserve enough room for the two-row mobile navigation. */
+  .shell{padding-bottom:145px !important}
+
+  .topbar .inner{
+    width:100%;
+    min-width:0;
+    overflow:hidden;
+  }
+  .topbar .brandwrap{
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    overflow:hidden;
+  }
+  .topbar .brandwrap span{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  /* Mobile navigation uses a real grid instead of horizontal scrolling. */
+  .nav{
+    position:fixed !important;
+    z-index:1000 !important;
+    left:max(8px,env(safe-area-inset-left)) !important;
+    right:max(8px,env(safe-area-inset-right)) !important;
+    bottom:max(8px,env(safe-area-inset-bottom)) !important;
+    width:auto !important;
+    height:auto !important;
+    max-height:none !important;
+    padding:7px !important;
+    display:grid !important;
+    grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+    gap:6px !important;
+    overflow:visible !important;
+    border-radius:20px !important;
+    background:rgba(5,31,42,.96) !important;
+    backdrop-filter:blur(18px) !important;
+    -webkit-backdrop-filter:blur(18px) !important;
+    box-shadow:0 14px 40px rgba(0,0,0,.25) !important;
+  }
+  .nav a,.nav button{
+    min-width:0 !important;
+    width:100% !important;
+    min-height:43px !important;
+    margin:0 !important;
+    padding:7px 4px !important;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:3px !important;
+    text-align:center !important;
+    white-space:normal !important;
+    overflow-wrap:anywhere !important;
+    line-height:1.12 !important;
+    font-size:10px !important;
+    border-radius:12px !important;
+    box-shadow:none !important;
+  }
+  .nav button{appearance:none !important}
+  .notif-badge{
+    flex:0 0 auto;
+    min-width:16px;
+    height:16px;
+    padding:0 4px;
+    margin-left:2px;
+    font-size:9px;
+  }
+}
+
+@media(max-width:390px){
+  .shell{padding-bottom:140px !important}
+  .nav{left:6px !important;right:6px !important;bottom:max(6px,env(safe-area-inset-bottom)) !important;gap:5px !important;padding:6px !important}
+  .nav a,.nav button{min-height:41px !important;padding:6px 3px !important;font-size:9.5px !important}
+  .topbar .brandwrap span{font-size:12px !important}
+}
+
+/* Duty-change workflow additions */
+#incomingDutyCard .actions, #supervisorDutyCard .actions { margin-top:12px; }
+#incomingDutyCard table, #supervisorDutyCard table { min-width:680px; }
+@media (max-width:600px){
+  #incomingDutyCard table, #supervisorDutyCard table { min-width:620px; }
+}
