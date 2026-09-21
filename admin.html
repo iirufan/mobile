@@ -6,7 +6,7 @@
 <title>Koveli | Admin</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#073541">
-<link rel="stylesheet" href="css/app.css?v=15">
+<link rel="stylesheet" href="css/app.css?v=16">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js">
 async function loadAdminSettings(){
   const settings=await getPortalSettings();
@@ -409,7 +409,7 @@ async function resetSubmittedRequests(){
 }
 
 </script>
-<script src="script/app.js?v=14">
+<script src="script/app.js?v=16">
 async function loadAdminSettings(){
   const settings=await getPortalSettings();
   dutyTimeChips.innerHTML=settings.dutyTimes.map(v=>`<span class="setting-chip">${esc(dutyLabel(v))}<button type="button" onclick="removeDutyTime('${esc(v)}')" aria-label="Remove">×</button></span>`).join("");
