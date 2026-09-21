@@ -50,13 +50,16 @@ async function requestPasswordChange(currentPassword,newPassword){
 function nav(active=""){
  const s=session(); if(!s)return "";
  const admin=s.role==="admin";
- return `<div class="topbar"><div class="inner"><div class="brandwrap"><img src="koveli-logo.png?v=4" class="toplogo" alt="Koveli Lounge"><span>Koveli Staff</span></div><div class="userchip">${esc(s.fullname)} · ${esc(s.role)}</div>
- <div class="nav"><a class="${active==="dashboard"?"active":""}" href="dashboard.html">Dashboard</a>
+ return `<div class="topbar"><div class="inner"><div class="brandwrap"><img src="koveli-logo.png?v=4" class="toplogo" alt="Koveli Lounge"><span>Koveli Staff</span></div><div class="userchip">${esc(s.fullname)} · ${esc(s.role)}</div></div></div>
+ <nav class="nav" aria-label="Main navigation">
+ <a class="${active==="dashboard"?"active":""}" href="dashboard.html">Dashboard</a>
  <a class="${active==="leave"?"active":""}" href="leave.html">Leave</a>
  <a class="${active==="duty"?"active":""}" href="dutychange.html">Duty Change</a>
- <a class="${active==="security"?"active":""}" href="security.html">Security</a> <a class="${active==="notifications"?"active":""}" href="notifications.html">Notifications <span id="navNotifBadge" class="notif-badge" style="display:none">0</span></a>
+ <a class="${active==="security"?"active":""}" href="security.html">Security</a>
+ <a class="${active==="notifications"?"active":""}" href="notifications.html">Notifications <span id="navNotifBadge" class="notif-badge" style="display:none">0</span></a>
  ${admin?`<a class="${active==="admin"?"active":""}" href="admin.html">Admin</a>`:""}
- <button onclick="logout()">Logout</button></div></div></div>`;
+ <button type="button" onclick="logout()">Logout</button>
+ </nav>`;
 }
 
 async function api(path,payload){
