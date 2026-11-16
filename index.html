@@ -1,3 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="icon" href="data:,">
+<style>[hidden]{display:none!important}</style>
 <title>Daily Reminder</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Scheherazade+New:wght@400;700&display=swap">
@@ -354,6 +361,10 @@ body[data-view="recite"] .frontsun.show,body[data-view="prayer"] .frontsun.show{
 .rec-ref{font-size:12px;font-weight:600;color:var(--brass)}
 .rec-ayah .ar{font-family:var(--f-ar);font-size:25px;line-height:1.95;text-align:right;color:var(--ink)}
 .rec-ayah .mn{font-size:14px;color:var(--ink);opacity:.92}
+/* Dhivehi (Thaana, right-to-left) — official Maldivian translation */
+.dv{font-family:"MV Faseyha","Faruma","MV Boli","Noto Sans Thaana","MV Typewriter",sans-serif;direction:rtl;text-align:right;line-height:2.05;font-size:17px}
+.rec-ayah .dv{color:var(--ink);opacity:.95}
+.verse-card .dv{opacity:.95}
 .rec-loading,.rec-err,.rec-done{font-size:14px;color:var(--muted);padding:10px 2px;text-align:center}
 .rec-done{color:var(--on);font-weight:600;font-size:16px}
 
@@ -399,6 +410,8 @@ body[data-view="recite"] .frontsun.show,body[data-view="prayer"] .frontsun.show{
 @keyframes pulse{50%{opacity:.55}}
 </style>
 
+</head>
+<body>
 <div class="skybg" id="skybg">
   <div class="scrim"></div>
   <div class="stars" id="skyStars"></div>
@@ -434,6 +447,7 @@ body[data-view="recite"] .frontsun.show,body[data-view="prayer"] .frontsun.show{
     <div class="verse-card" id="verseCard">
       <div class="lbl">Verse of the day</div>
       <div class="ar" id="verseAr" lang="ar"></div>
+      <div class="dv" id="verseDv" lang="dv" dir="rtl" hidden></div>
       <div class="tr" id="verseTr"></div>
       <div class="ref" id="verseRef"></div>
       <button class="btn-ghost" id="verseRead" style="justify-self:start;margin-top:6px">Mark as read</button>
@@ -1054,45 +1068,57 @@ $("ovClear").onclick=()=>{ const now=new Date(); const [y,mo,d]=ymdIn(P.tz,now);
 // Authentic morning/evening remembrances (Ḥiṣn al-Muslim). {phrase differs morning/evening via {m}/{e}}
 const AZKAR=[
   {id:"kursi",n:1,ref:"Qur'ān 2:255",ar:"اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ، لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ، لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ، مَنْ ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ، يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ، وَلَا يُحِيطُونَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ، وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ، وَلَا يَؤُودُهُ حِفْظُهُمَا، وَهُوَ الْعَلِيُّ الْعَظِيمُ",
-    tr:"Allāhu lā ilāha illā huwa-l-Ḥayyu-l-Qayyūm…",mn:"Āyat al-Kursī. Whoever reads it in the morning is protected until evening, and in the evening until morning."},
-  {id:"ikhlas",n:3,ref:"Sūrahs 112–114 ×3",ar:"قُلْ هُوَ اللَّهُ أَحَدٌ… ۝ قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ… ۝ قُلْ أَعُوذُ بِرَبِّ النَّاسِ…",
-    tr:"Al-Ikhlāṣ, al-Falaq, an-Nās (×3 each)",mn:"Reciting these three sūrahs three times suffices you against all things."},
+    tr:"Allāhu lā ilāha illā huwa-l-Ḥayyu-l-Qayyūm. Lā taʾkhudhuhu sinatun wa lā nawm. Lahu mā fi-s-samāwāti wa mā fi-l-arḍ. Man dha-lladhī yashfaʿu ʿindahu illā bi-idhnih. Yaʿlamu mā bayna aydīhim wa mā khalfahum, wa lā yuḥīṭūna bi-shayʾin min ʿilmihi illā bimā shāʾ. Wasiʿa kursiyyuhu-s-samāwāti wa-l-arḍ, wa lā yaʾūduhu ḥifẓuhumā, wa huwa-l-ʿAliyyu-l-ʿAẓīm.",mn:"Āyat al-Kursī. Whoever reads it in the morning is protected until evening, and in the evening until morning."},
+  {id:"ikhlas",n:3,ref:"Sūrahs 112–114 ×3",ar:"قُلْ هُوَ اللَّهُ أَحَدٌ، اللَّهُ الصَّمَدُ، لَمْ يَلِدْ وَلَمْ يُولَدْ، وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ ۝ قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ، مِنْ شَرِّ مَا خَلَقَ، وَمِنْ شَرِّ غَاسِقٍ إِذَا وَقَبَ، وَمِنْ شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ، وَمِنْ شَرِّ حَاسِدٍ إِذَا حَسَدَ ۝ قُلْ أَعُوذُ بِرَبِّ النَّاسِ، مَلِكِ النَّاسِ، إِلَٰهِ النَّاسِ، مِنْ شَرِّ الْوَسْوَاسِ الْخَنَّاسِ، الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ، مِنَ الْجِنَّةِ وَالنَّاسِ",
+    tr:"Qul huwa-llāhu aḥad… (al-Ikhlāṣ) · Qul aʿūdhu bi-Rabbi-l-falaq… (al-Falaq) · Qul aʿūdhu bi-Rabbi-n-nās… (an-Nās) — recite each three times.",mn:"Reciting these three sūrahs three times suffices you against all things."},
   {id:"sayyid",n:1,ref:"Sayyid al-Istighfār · Bukhārī",ar:"اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ",
-    tr:"Allāhumma anta Rabbī lā ilāha illā anta…",mn:"The best way of seeking forgiveness."},
+    tr:"Allāhumma anta Rabbī lā ilāha illā ant, khalaqtanī wa anā ʿabduk, wa anā ʿalā ʿahdika wa waʿdika mā-staṭaʿt. Aʿūdhu bika min sharri mā ṣanaʿt, abūʾu laka bi-niʿmatika ʿalayy, wa abūʾu bi-dhanbī, fa-ghfir lī fa-innahu lā yaghfiru-dh-dhunūba illā ant.",mn:"The best way of seeking forgiveness."},
   {id:"mulk",n:1,ref:"Muslim",
     arM:"أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
     arE:"أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
-    trM:"Aṣbaḥnā wa aṣbaḥa-l-mulku lillāh…",trE:"Amsaynā wa amsā-l-mulku lillāh…",mn:"We have reached the morning/evening and the dominion belongs to Allah."},
+    trM:"Aṣbaḥnā wa aṣbaḥa-l-mulku lillāh, wa-l-ḥamdu lillāh, lā ilāha illā-llāhu waḥdahu lā sharīka lah, lahu-l-mulku wa lahu-l-ḥamd, wa huwa ʿalā kulli shayʾin qadīr.",trE:"Amsaynā wa amsā-l-mulku lillāh, wa-l-ḥamdu lillāh, lā ilāha illā-llāhu waḥdahu lā sharīka lah, lahu-l-mulku wa lahu-l-ḥamd, wa huwa ʿalā kulli shayʾin qadīr.",mn:"We have reached the morning/evening and the dominion belongs to Allah."},
   {id:"bika",n:1,ref:"Tirmidhī",
     arM:"اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ",
     arE:"اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ",
-    trM:"Allāhumma bika aṣbaḥnā…",trE:"Allāhumma bika amsaynā…",mn:"O Allah, by You we enter the morning/evening, we live and we die."},
+    trM:"Allāhumma bika aṣbaḥnā, wa bika amsaynā, wa bika naḥyā, wa bika namūt, wa ilayka-n-nushūr.",trE:"Allāhumma bika amsaynā, wa bika aṣbaḥnā, wa bika naḥyā, wa bika namūt, wa ilayka-l-maṣīr.",mn:"O Allah, by You we enter the morning/evening, we live and we die."},
   {id:"afini",n:3,ref:"Abū Dāwūd ×3",ar:"اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَٰهَ إِلَّا أَنْتَ",
-    tr:"Allāhumma ʿāfinī fī badanī…",mn:"O Allah, grant me well-being in my body, hearing and sight."},
+    tr:"Allāhumma ʿāfinī fī badanī, Allāhumma ʿāfinī fī samʿī, Allāhumma ʿāfinī fī baṣarī, lā ilāha illā ant. (×3)",mn:"O Allah, grant me well-being in my body, hearing and sight."},
   {id:"bismillah",n:3,ref:"Abū Dāwūd ×3",ar:"بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ",
-    tr:"Bismillāhi-lladhī lā yaḍurru maʿa-smihi shayʾ…",mn:"In the name of Allah with whose name nothing is harmed. Whoever says it thrice, nothing will harm him."},
+    tr:"Bismillāhi-lladhī lā yaḍurru maʿa-smihi shayʾun fi-l-arḍi wa lā fi-s-samāʾi wa huwa-s-Samīʿu-l-ʿAlīm. (×3)",mn:"In the name of Allah with whose name nothing is harmed. Whoever says it thrice, nothing will harm him."},
   {id:"radeetu",n:3,ref:"Tirmidhī ×3",ar:"رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ صَلَّى اللَّهُ عَلَيْهِ وَسَلَّمَ نَبِيًّا",
-    tr:"Raḍītu billāhi Rabbā, wa bil-Islāmi dīnā…",mn:"It is a right upon Allah to please whoever says this."},
+    tr:"Raḍītu billāhi Rabbā, wa bil-Islāmi dīnā, wa bi-Muḥammadin ﷺ nabiyyā. (×3)",mn:"It is a right upon Allah to please whoever says this."},
   {id:"hasbi",n:7,ref:"×7",ar:"حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ",
-    tr:"Ḥasbiya-llāhu lā ilāha illā huwa…",mn:"Allah is sufficient for me — whoever says it seven times, Allah suffices him."},
+    tr:"Ḥasbiya-llāhu lā ilāha illā huwa, ʿalayhi tawakkalt, wa huwa Rabbu-l-ʿarshi-l-ʿaẓīm. (×7)",mn:"Allah is sufficient for me — whoever says it seven times, Allah suffices him."},
   {id:"subhan",n:100,ref:"Muslim ×100",ar:"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ",
     tr:"Subḥāna-llāhi wa bi-ḥamdih",mn:"Whoever says it 100 times, his sins are forgiven though they be like the foam of the sea."},
   {id:"tahlil",n:10,ref:"×10 (or ×100)",ar:"لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ",
-    tr:"Lā ilāha illā-llāhu waḥdahu lā sharīka lah…",mn:"A protection and reward equal to freeing slaves."},
+    tr:"Lā ilāha illā-llāhu waḥdahu lā sharīka lah, lahu-l-mulku wa lahu-l-ḥamd, wa huwa ʿalā kulli shayʾin qadīr. (×10 or ×100)",mn:"A protection and reward equal to freeing slaves."},
   {id:"fitrah",n:1,ref:"Aḥmad",
     arM:"أَصْبَحْنَا عَلَى فِطْرَةِ الْإِسْلَامِ، وَعَلَى كَلِمَةِ الْإِخْلَاصِ، وَعَلَى دِينِ نَبِيِّنَا مُحَمَّدٍ ﷺ، وَعَلَى مِلَّةِ أَبِينَا إِبْرَاهِيمَ حَنِيفًا مُسْلِمًا وَمَا كَانَ مِنَ الْمُشْرِكِينَ",
     arE:"أَمْسَيْنَا عَلَى فِطْرَةِ الْإِسْلَامِ، وَعَلَى كَلِمَةِ الْإِخْلَاصِ، وَعَلَى دِينِ نَبِيِّنَا مُحَمَّدٍ ﷺ، وَعَلَى مِلَّةِ أَبِينَا إِبْرَاهِيمَ حَنِيفًا مُسْلِمًا وَمَا كَانَ مِنَ الْمُشْرِكِينَ",
-    trM:"Aṣbaḥnā ʿalā fiṭrati-l-Islām…",trE:"Amsaynā ʿalā fiṭrati-l-Islām…",mn:"We rise upon the natural way of Islam, the word of sincerity, and the religion of our Prophet ﷺ."},
+    trM:"Aṣbaḥnā ʿalā fiṭrati-l-Islām, wa ʿalā kalimati-l-ikhlāṣ, wa ʿalā dīni Nabiyyinā Muḥammadin ﷺ, wa ʿalā millati abīnā Ibrāhīma ḥanīfan musliman wa mā kāna mina-l-mushrikīn.",trE:"Amsaynā ʿalā fiṭrati-l-Islām, wa ʿalā kalimati-l-ikhlāṣ, wa ʿalā dīni Nabiyyinā Muḥammadin ﷺ, wa ʿalā millati abīnā Ibrāhīma ḥanīfan musliman wa mā kāna mina-l-mushrikīn.",mn:"We rise upon the natural way of Islam, the word of sincerity, and the religion of our Prophet ﷺ."},
   {id:"juwayriyah",n:3,ref:"Muslim ×3",ar:"سُبْحَانَ اللَّهِ وَبِحَمْدِهِ عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ",
-    tr:"Subḥāna-llāhi wa bi-ḥamdihi ʿadada khalqih…",mn:"Glory and praise to Allah — as much as His creation, His pleasure, the weight of His throne and the ink of His words."},
-  {id:"afwafiyah",n:1,ref:"Ibn Mājah",ar:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي",
-    tr:"Allāhumma innī asʾaluka-l-ʿafwa wa-l-ʿāfiyah…",mn:"O Allah, I ask You for pardon and well-being in my religion, my worldly life, my family and my wealth."},
-  {id:"hayyqayyum",n:1,ref:"Al-Ḥākim",ar:"يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ",
-    tr:"Yā Ḥayyu yā Qayyūm, bi-raḥmatika astaghīth…",mn:"O Ever-Living, O Sustainer, by Your mercy I seek help; set right all my affairs and do not leave me to myself for an instant."},
+    tr:"Subḥāna-llāhi wa bi-ḥamdihi ʿadada khalqih, wa riḍā nafsih, wa zinata ʿarshih, wa midāda kalimātih. (×3)",mn:"Glory and praise to Allah — as much as His creation, His pleasure, the weight of His throne and the ink of His words."},
+  {id:"afwafiyah",n:1,ref:"Abū Dāwūd · Ibn Mājah",ar:"اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالْآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي دِينِي وَدُنْيَايَ وَأَهْلِي وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي، وَآمِنْ رَوْعَاتِي، اللَّهُمَّ احْفَظْنِي مِنْ بَيْنِ يَدَيَّ، وَمِنْ خَلْفِي، وَعَنْ يَمِينِي، وَعَنْ شِمَالِي، وَمِنْ فَوْقِي، وَأَعُوذُ بِعَظَمَتِكَ أَنْ أُغْتَالَ مِنْ تَحْتِي",
+    tr:"Allāhumma innī asʾaluka-l-ʿafwa wa-l-ʿāfiyah fi-d-dunyā wa-l-ākhirah. Allāhumma innī asʾaluka-l-ʿafwa wa-l-ʿāfiyah fī dīnī wa dunyāya wa ahlī wa mālī. Allāhumma-stur ʿawrātī wa āmin rawʿātī. Allāhumma-ḥfaẓnī min bayni yadayya wa min khalfī wa ʿan yamīnī wa ʿan shimālī wa min fawqī, wa aʿūdhu bi-ʿaẓamatika an ughtāla min taḥtī.",mn:"O Allah, I ask You for pardon and well-being in my religion, worldly life, family and wealth. O Allah, cover my faults and calm my fears. O Allah, guard me from in front, behind, my right, my left and above; and I seek refuge in Your greatness from being taken unaware from beneath me."},
+  {id:"hayyqayyum",n:1,ref:"Al-Ḥākim · Nasāʾī",ar:"يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغِيثُ، أَصْلِحْ لِي شَأْنِي كُلَّهُ، وَلَا تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ",
+    tr:"Yā Ḥayyu yā Qayyūm, bi-raḥmatika astaghīth, aṣliḥ lī shaʾnī kullah, wa lā takilnī ilā nafsī ṭarfata ʿayn.",mn:"O Ever-Living, O Sustainer, by Your mercy I seek help; set right all my affairs and do not leave me to myself for an instant."},
   {id:"nima",n:1,ref:"Abū Dāwūd",
     arM:"اللَّهُمَّ مَا أَصْبَحَ بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لَا شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ",
     arE:"اللَّهُمَّ مَا أَمْسَى بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لَا شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ",
-    trM:"Allāhumma mā aṣbaḥa bī min niʿmah…",trE:"Allāhumma mā amsā bī min niʿmah…",mn:"O Allah, whatever blessing I or any of Your creation have — it is from You alone; to You belong praise and thanks."},
+    trM:"Allāhumma mā aṣbaḥa bī min niʿmatin aw bi-aḥadin min khalqika fa-minka waḥdaka lā sharīka lak, fa-laka-l-ḥamdu wa laka-sh-shukr.",trE:"Allāhumma mā amsā bī min niʿmatin aw bi-aḥadin min khalqika fa-minka waḥdaka lā sharīka lak, fa-laka-l-ḥamdu wa laka-sh-shukr.",mn:"O Allah, whatever blessing I or any of Your creation have — it is from You alone; to You belong praise and thanks."},
+  {id:"shahid",n:4,ref:"Abū Dāwūd ×4",
+    arM:"اللَّهُمَّ إِنِّي أَصْبَحْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلَائِكَتَكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ لَا إِلَٰهَ إِلَّا أَنْتَ وَحْدَكَ لَا شَرِيكَ لَكَ، وَأَنَّ مُحَمَّدًا عَبْدُكَ وَرَسُولُكَ",
+    arE:"اللَّهُمَّ إِنِّي أَمْسَيْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلَائِكَتَكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ لَا إِلَٰهَ إِلَّا أَنْتَ وَحْدَكَ لَا شَرِيكَ لَكَ، وَأَنَّ مُحَمَّدًا عَبْدُكَ وَرَسُولُكَ",
+    trM:"Allāhumma innī aṣbaḥtu ush-hiduk, wa ush-hidu ḥamalata ʿarshik, wa malāʾikatak, wa jamīʿa khalqik, annaka anta-llāhu lā ilāha illā anta waḥdaka lā sharīka lak, wa anna Muḥammadan ʿabduka wa rasūluk. (×4)",trE:"Allāhumma innī amsaytu ush-hiduk, wa ush-hidu ḥamalata ʿarshik, wa malāʾikatak, wa jamīʿa khalqik, annaka anta-llāhu lā ilāha illā anta waḥdaka lā sharīka lak, wa anna Muḥammadan ʿabduka wa rasūluk. (×4)",mn:"O Allah, I call You, the bearers of Your throne, Your angels and all creation to witness that You are Allah — none worthy of worship but You alone — and that Muḥammad is Your servant and messenger. Whoever says it is freed from the Fire."},
+  {id:"qabr",n:3,ref:"Abū Dāwūd ×3",ar:"اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ، لَا إِلَٰهَ إِلَّا أَنْتَ",
+    tr:"Allāhumma innī aʿūdhu bika mina-l-kufri wa-l-faqr, wa aʿūdhu bika min ʿadhābi-l-qabr, lā ilāha illā ant. (×3)",mn:"O Allah, I seek refuge in You from disbelief and poverty, and from the punishment of the grave. There is none worthy of worship but You."},
+  {id:"alimghayb",n:1,ref:"Tirmidhī",ar:"اللَّهُمَّ عَالِمَ الْغَيْبِ وَالشَّهَادَةِ فَاطِرَ السَّمَاوَاتِ وَالْأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لَا إِلَٰهَ إِلَّا أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي، وَمِنْ شَرِّ الشَّيْطَانِ وَشِرْكِهِ، وَأَنْ أَقْتَرِفَ عَلَى نَفْسِي سُوءًا أَوْ أَجُرَّهُ إِلَى مُسْلِمٍ",
+    tr:"Allāhumma ʿālima-l-ghaybi wa-sh-shahādah, fāṭira-s-samāwāti wa-l-arḍ, Rabba kulli shayʾin wa malīkah, ash-hadu an lā ilāha illā ant, aʿūdhu bika min sharri nafsī, wa min sharri-sh-shayṭāni wa shirkih, wa an aqtarifa ʿalā nafsī sūʾan aw ajurrahu ilā muslim.",mn:"O Allah, Knower of the unseen and the seen, Creator of the heavens and earth, Lord and Owner of all things — I bear witness there is no god but You. I seek refuge in You from the evil of my soul, and from the evil of Satan and his idolatry, and from bringing evil upon myself or any Muslim."},
+  {id:"salawat",n:10,ref:"Ṭabarānī ×10",ar:"اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبِيِّنَا مُحَمَّدٍ وَعَلَى آلِهِ وَصَحْبِهِ أَجْمَعِينَ",
+    tr:"Allāhumma ṣalli wa sallim ʿalā nabiyyinā Muḥammadin wa ʿalā ālihi wa ṣaḥbihi ajmaʿīn. (×10)",mn:"O Allah, send blessings and peace upon our Prophet Muḥammad, his family and companions. Whoever sends ṣalawāt upon the Prophet ﷺ ten times morning and evening attains his intercession."},
+  {id:"astaghfir100",n:100,ref:"Bukhārī ×100",ar:"أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ",
+    tr:"Astaghfiru-llāha wa atūbu ilayh",mn:"I seek the forgiveness of Allah and turn to Him in repentance — the Prophet ﷺ sought forgiveness more than a hundred times a day."},
 ];
 const SMALL_DUA={
   m:{ar:"أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ",tr:"Aʿūdhu bi-kalimāti-llāhi-t-tāmmāti min sharri mā khalaq (×3)",mn:"I seek refuge in Allah's perfect words from the evil of what He created."},
@@ -1345,7 +1371,19 @@ function dayOfYear(){ const d=new Date(), s=new Date(d.getFullYear(),0,0); retur
 function verseOfDay(){ return VERSES[dayOfYear()%VERSES.length]; }
 let verseRead=store.get("verse_read",{_d:"",read:false});
 function ensureVerseRead(){ const k=dayKeyNow(); if(verseRead._d!==k){ verseRead={_d:k,read:false}; store.set("verse_read",verseRead); } }
-function renderVerse(){ const v=verseOfDay(); if($("verseAr")){ $("verseAr").textContent=v.ar; $("verseTr").textContent=v.tr; $("verseRef").textContent=v.ref; } renderVerseBtn(); }
+function renderVerse(){ const v=verseOfDay(); if($("verseAr")){ $("verseAr").textContent=v.ar; $("verseTr").textContent=v.tr; $("verseRef").textContent=v.ref; } renderVerseBtn(); loadVerseDhivehi(); }
+const verseDvCache={};
+async function loadVerseDhivehi(){
+  const el=$("verseDv"); if(!el)return;
+  const m=verseOfDay().ref.match(/(\d+)\s*[:：]\s*(\d+)/);
+  if(!m){ el.hidden=true; return; }
+  const key=m[1]+":"+m[2];
+  if(key in verseDvCache){ const t=verseDvCache[key]; if(t){ el.textContent=t; el.hidden=false; } else el.hidden=true; return; }
+  try{ const r=await fetch(`https://api.alquran.cloud/v1/ayah/${key}/editions/div.divehi`,{cache:"force-cache"});
+    const j=await r.json(); const t=j&&j.data&&j.data[0]&&j.data[0].text; verseDvCache[key]=t||null;
+    if(t && $("verseDv")){ $("verseDv").textContent=t; $("verseDv").hidden=false; } else if($("verseDv")) $("verseDv").hidden=true;
+  }catch(e){ verseDvCache[key]=null; }
+}
 function renderVerseBtn(){ ensureVerseRead(); const btn=$("verseRead"); if(btn){ btn.textContent=verseRead.read?"✓ Read today":"Mark as read"; btn.classList.toggle("btn-brass",!verseRead.read); btn.disabled=verseRead.read; } }
 function markVerseRead(){ ensureVerseRead(); if(!verseRead.read){ verseRead.read=true; store.set("verse_read",verseRead); renderVerseBtn(); renderMascot(); celebrate("JazākAllāhu khayran",false); } }
 
@@ -1684,11 +1722,16 @@ let recPerDay=store.get("rec_perday",3);
 const ayahCache={};
 async function getAyah(n){
   if(ayahCache[n])return ayahCache[n];
-  const res=await fetch(`https://api.alquran.cloud/v1/ayah/${n}/editions/quran-uthmani,en.sahih`,{cache:"force-cache"});
-  if(!res.ok)throw new Error("net");
-  const j=await res.json(); const a=j.data&&j.data[0], e=j.data&&j.data[1];
+  const base=`https://api.alquran.cloud/v1/ayah/${n}/editions/`;
+  const [rMain,rDv]=await Promise.all([
+    fetch(base+"quran-uthmani,en.sahih",{cache:"force-cache"}),
+    fetch(base+"div.divehi",{cache:"force-cache"}).catch(()=>null)
+  ]);
+  if(!rMain.ok)throw new Error("net");
+  const j=await rMain.json(); const a=j.data&&j.data[0], e=j.data&&j.data[1];
   if(!a||!e)throw new Error("data");
-  const o={ar:a.text,en:e.text,s:a.surah.englishName,sn:a.surah.number,ni:a.numberInSurah};
+  let dv=null; try{ if(rDv&&rDv.ok){ const jd=await rDv.json(); dv=jd.data&&jd.data[0]&&jd.data[0].text; } }catch(_){}
+  const o={ar:a.text,en:e.text,dv,s:a.surah.englishName,sn:a.surah.number,ni:a.numberInSurah};
   ayahCache[n]=o; return o;
 }
 async function renderRecite(){
@@ -1706,7 +1749,7 @@ async function renderRecite(){
   try{
     const items=await Promise.all(nums.map(getAyah));
     if(list.dataset.token!==token)return;
-    list.innerHTML=items.map(o=>`<div class="rec-ayah"><div class="rec-ref">${o.s} · ${o.sn}:${o.ni}</div><div class="ar" lang="ar">${o.ar}</div><div class="mn">${o.en}</div></div>`).join("");
+    list.innerHTML=items.map(o=>`<div class="rec-ayah"><div class="rec-ref">${o.s} · ${o.sn}:${o.ni}</div><div class="ar" lang="ar">${o.ar}</div>${o.dv?`<div class="dv" lang="dv" dir="rtl">${o.dv}</div>`:""}<div class="mn">${o.en}</div></div>`).join("");
   }catch(e){
     if(list.dataset.token!==token)return;
     list.innerHTML=`<div class="rec-err">Couldn't load today's āyāt — connect to the internet and reopen this tab.</div>`;
@@ -1749,3 +1792,6 @@ setInterval(()=>{ const [,,d]=ymdIn(P.tz,new Date()); if(d!==build.day){ build.d
 build.day=ymdIn(P.tz,new Date())[2];
 })();
 </script>
+
+</body>
+</html>
